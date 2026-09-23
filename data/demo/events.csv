@@ -1,0 +1,7 @@
+theme,start_date,end_date,multiplier,kind
+onboarding,2026-02-12,,0.35,drop
+pricing,2026-02-26,,2.6,spike
+calendar_sync,2026-03-13,2026-04-17,7.0,spike
+mobile_performance,2026-05-14,,1.0,none
+recurring_events,2026-06-12,,7.0,spike
+notifications,2026-01-05,,,gradual growth

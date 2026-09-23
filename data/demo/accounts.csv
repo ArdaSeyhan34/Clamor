@@ -1,0 +1,601 @@
+account_id,company,plan,seats,mrr,region,industry
+ACC-0001,Green Studio,pro,3,36.0,APAC,Agency
+ACC-0002,Green Capital,business,19,475.0,APAC,Finance
+ACC-0003,Nova Logistics,pro,2,24.0,North America,Software
+ACC-0004,Harbor Systems,free,2,0.0,LATAM,Agency
+ACC-0005,Iron Works,free,1,0.0,Europe,Software
+ACC-0006,Summit Robotics,business,17,425.0,LATAM,Finance
+ACC-0007,Iron Ventures,free,1,0.0,APAC,Retail
+ACC-0008,Bright Foods,pro,4,48.0,North America,Education
+ACC-0009,Iron Robotics,pro,3,36.0,Europe,Agency
+ACC-0010,Clear Ventures,free,1,0.0,APAC,Software
+ACC-0011,Harbor Partners,free,1,0.0,Europe,Agency
+ACC-0012,Bold Works,free,1,0.0,APAC,Software
+ACC-0013,Lucky Capital,free,2,0.0,LATAM,Nonprofit
+ACC-0014,Harbor Studio,free,1,0.0,Europe,Agency
+ACC-0015,Summit Digital,free,1,0.0,North America,Agency
+ACC-0016,Bold Foods,pro,4,48.0,LATAM,Education
+ACC-0017,Nova Works,enterprise,266,10108.0,Europe,Agency
+ACC-0018,Iron Media,pro,2,24.0,APAC,Software
+ACC-0019,Harbor Digital,pro,5,60.0,APAC,Healthcare
+ACC-0020,Urban Capital,enterprise,117,4446.0,APAC,Software
+ACC-0021,Lucky Partners,free,1,0.0,Europe,Nonprofit
+ACC-0022,Clear Robotics,free,1,0.0,Europe,Healthcare
+ACC-0023,Maple Studio,pro,3,36.0,Europe,Retail
+ACC-0024,Bold Health,free,1,0.0,Europe,Healthcare
+ACC-0025,Silver Logistics,free,1,0.0,LATAM,Software
+ACC-0026,Green Analytics,free,1,0.0,APAC,Agency
+ACC-0027,Silver Digital,free,1,0.0,Europe,Retail
+ACC-0028,Blue Robotics,business,18,450.0,Europe,Agency
+ACC-0029,Urban Health,pro,3,36.0,Europe,Finance
+ACC-0030,Silver Studio,free,1,0.0,North America,Nonprofit
+ACC-0031,Iron Labs,free,2,0.0,Europe,Nonprofit
+ACC-0032,Maple Works,free,2,0.0,Europe,Retail
+ACC-0033,Summit Capital,free,1,0.0,North America,Nonprofit
+ACC-0034,Urban Digital,free,1,0.0,Europe,Nonprofit
+ACC-0035,Green Partners,pro,3,36.0,North America,Education
+ACC-0036,Blue Works,free,1,0.0,Europe,Finance
+ACC-0037,Green Ventures,free,2,0.0,APAC,Retail
+ACC-0038,Quiet Studio,free,1,0.0,LATAM,Finance
+ACC-0039,Iron Analytics 92,business,16,400.0,Europe,Finance
+ACC-0040,Rapid Health,free,2,0.0,North America,Healthcare
+ACC-0041,Nova Analytics,free,1,0.0,Europe,Healthcare
+ACC-0042,Rapid Analytics 33,business,34,850.0,LATAM,Software
+ACC-0043,Maple Ventures,free,1,0.0,APAC,Software
+ACC-0044,Clear Foods,business,21,525.0,LATAM,Software
+ACC-0045,Green Labs,pro,3,36.0,LATAM,Agency
+ACC-0046,Quiet Health,pro,3,36.0,APAC,Nonprofit
+ACC-0047,North Works 67,free,1,0.0,APAC,Software
+ACC-0048,North Capital,free,1,0.0,APAC,Finance
+ACC-0049,Bold Digital,free,2,0.0,APAC,Retail
+ACC-0050,Harbor Logistics,business,20,500.0,LATAM,Education
+ACC-0051,Nova Robotics,free,1,0.0,Europe,Retail
+ACC-0052,Silver Systems,pro,4,48.0,Europe,Retail
+ACC-0053,Quiet Digital,free,1,0.0,LATAM,Finance
+ACC-0054,Clear Capital,free,2,0.0,LATAM,Education
+ACC-0055,Nova Capital,free,2,0.0,APAC,Software
+ACC-0056,Silver Ventures,free,2,0.0,Europe,Healthcare
+ACC-0057,Nova Ventures,pro,3,36.0,North America,Healthcare
+ACC-0058,Quiet Systems,free,1,0.0,Europe,Retail
+ACC-0059,Urban Robotics,enterprise,162,6156.0,Europe,Finance
+ACC-0060,Maple Analytics,pro,3,36.0,Europe,Healthcare
+ACC-0061,Clear Partners,pro,2,24.0,Europe,Nonprofit
+ACC-0062,Rapid Analytics,pro,3,36.0,APAC,Software
+ACC-0063,Nova Health,pro,7,84.0,LATAM,Healthcare
+ACC-0064,Silver Labs,free,1,0.0,APAC,Nonprofit
+ACC-0065,Quiet Robotics,free,1,0.0,North America,Nonprofit
+ACC-0066,Blue Logistics,free,1,0.0,Europe,Software
+ACC-0067,Green Systems,free,1,0.0,Europe,Finance
+ACC-0068,Iron Partners,free,2,0.0,Europe,Retail
+ACC-0069,Bold Labs,enterprise,256,9728.0,LATAM,Agency
+ACC-0070,Blue Ventures,free,1,0.0,North America,Nonprofit
+ACC-0071,North Media,pro,3,36.0,LATAM,Healthcare
+ACC-0072,Harbor Ventures,free,1,0.0,Europe,Nonprofit
+ACC-0073,Maple Health,business,25,625.0,LATAM,Healthcare
+ACC-0074,Summit Media,pro,7,84.0,Europe,Nonprofit
+ACC-0075,Maple Foods 47,free,1,0.0,North America,Healthcare
+ACC-0076,Iron Digital,business,11,275.0,APAC,Nonprofit
+ACC-0077,Iron Partners 31,business,36,900.0,North America,Software
+ACC-0078,Maple Foods 92,business,16,400.0,LATAM,Education
+ACC-0079,Green Capital 74,pro,3,36.0,APAC,Education
+ACC-0080,Quiet Logistics,free,1,0.0,North America,Education
+ACC-0081,Harbor Foods,free,1,0.0,APAC,Retail
+ACC-0082,North Ventures 86,business,33,825.0,Europe,Finance
+ACC-0083,North Robotics,pro,4,48.0,LATAM,Agency
+ACC-0084,Iron Labs 48,free,1,0.0,North America,Healthcare
+ACC-0085,Rapid Labs,business,20,500.0,APAC,Retail
+ACC-0086,Quiet Works,pro,2,24.0,North America,Agency
+ACC-0087,Lucky Works,pro,3,36.0,Europe,Healthcare
+ACC-0088,Nova Works 29,free,2,0.0,North America,Software
+ACC-0089,Clear Works,free,1,0.0,LATAM,Software
+ACC-0090,Quiet Ventures,free,2,0.0,North America,Software
+ACC-0091,Blue Analytics,free,2,0.0,APAC,Nonprofit
+ACC-0092,Nova Studio 96,business,34,850.0,APAC,Education
+ACC-0093,Iron Studio,free,1,0.0,LATAM,Software
+ACC-0094,Iron Partners 88,free,1,0.0,LATAM,Nonprofit
+ACC-0095,Rapid Robotics,free,1,0.0,APAC,Software
+ACC-0096,Iron Media 94,pro,2,24.0,Europe,Nonprofit
+ACC-0097,North Health,free,2,0.0,APAC,Software
+ACC-0098,Bold Robotics,free,2,0.0,North America,Software
+ACC-0099,Urban Foods 73,free,2,0.0,North America,Software
+ACC-0100,Maple Foods 82,free,2,0.0,APAC,Finance
+ACC-0101,Blue Capital 93,enterprise,368,13984.0,LATAM,Agency
+ACC-0102,Green Robotics,pro,3,36.0,LATAM,Education
+ACC-0103,Lucky Robotics,free,2,0.0,North America,Agency
+ACC-0104,Lucky Foods,free,2,0.0,APAC,Education
+ACC-0105,North Partners,business,22,550.0,LATAM,Agency
+ACC-0106,Harbor Media,free,1,0.0,Europe,Retail
+ACC-0107,Bright Works,pro,3,36.0,APAC,Healthcare
+ACC-0108,Quiet Media 12,pro,3,36.0,APAC,Education
+ACC-0109,Maple Logistics,free,1,0.0,APAC,Healthcare
+ACC-0110,Rapid Labs 65,free,2,0.0,APAC,Software
+ACC-0111,Lucky Logistics,pro,3,36.0,LATAM,Retail
+ACC-0112,Summit Analytics 23,business,11,275.0,LATAM,Finance
+ACC-0113,Green Digital 33,free,1,0.0,Europe,Healthcare
+ACC-0114,Nova Digital,business,18,450.0,North America,Finance
+ACC-0115,Urban Labs,free,1,0.0,North America,Healthcare
+ACC-0116,Harbor Capital,pro,2,24.0,APAC,Education
+ACC-0117,Silver Digital 50,pro,6,72.0,Europe,Software
+ACC-0118,Rapid Robotics 78,free,2,0.0,APAC,Software
+ACC-0119,Nova Studio 91,free,2,0.0,Europe,Software
+ACC-0120,Silver Foods 37,pro,3,36.0,LATAM,Finance
+ACC-0121,Green Partners 92,free,1,0.0,LATAM,Software
+ACC-0122,Silver Health,pro,6,72.0,Europe,Finance
+ACC-0123,Summit Health,pro,2,24.0,LATAM,Finance
+ACC-0124,Maple Capital,free,1,0.0,LATAM,Retail
+ACC-0125,Summit Foods,pro,6,72.0,APAC,Education
+ACC-0126,Bold Media,free,1,0.0,Europe,Nonprofit
+ACC-0127,Green Digital,free,2,0.0,North America,Software
+ACC-0128,Harbor Robotics 85,free,1,0.0,APAC,Healthcare
+ACC-0129,Green Ventures 17,free,1,0.0,Europe,Education
+ACC-0130,Nova Labs,free,1,0.0,LATAM,Retail
+ACC-0131,Maple Robotics,business,27,675.0,North America,Healthcare
+ACC-0132,Rapid Capital,pro,3,36.0,APAC,Nonprofit
+ACC-0133,Bright Media,free,2,0.0,North America,Retail
+ACC-0134,Urban Partners,free,1,0.0,LATAM,Finance
+ACC-0135,Lucky Analytics,business,12,300.0,LATAM,Healthcare
+ACC-0136,North Analytics,free,1,0.0,North America,Healthcare
+ACC-0137,Green Works 44,enterprise,232,8816.0,North America,Education
+ACC-0138,Rapid Partners,free,1,0.0,APAC,Finance
+ACC-0139,Rapid Ventures,free,2,0.0,LATAM,Agency
+ACC-0140,Bright Ventures,business,18,450.0,North America,Retail
+ACC-0141,Rapid Capital 28,pro,6,72.0,Europe,Nonprofit
+ACC-0142,Silver Analytics,pro,4,48.0,LATAM,Nonprofit
+ACC-0143,Green Logistics 63,free,1,0.0,Europe,Finance
+ACC-0144,Bright Robotics,business,20,500.0,APAC,Healthcare
+ACC-0145,Lucky Digital 51,free,2,0.0,Europe,Education
+ACC-0146,Bold Partners 44,business,15,375.0,LATAM,Agency
+ACC-0147,Urban Ventures,free,1,0.0,LATAM,Software
+ACC-0148,Nova Media,free,1,0.0,APAC,Nonprofit
+ACC-0149,Summit Media 26,free,1,0.0,North America,Healthcare
+ACC-0150,Bright Logistics,business,13,325.0,LATAM,Agency
+ACC-0151,Maple Digital 28,free,3,0.0,North America,Software
+ACC-0152,North Capital 10,pro,2,24.0,LATAM,Software
+ACC-0153,Urban Analytics,pro,5,60.0,APAC,Retail
+ACC-0154,Green Systems 45,pro,4,48.0,North America,Education
+ACC-0155,Summit Partners,pro,3,36.0,APAC,Agency
+ACC-0156,Lucky Media 84,enterprise,95,3610.0,LATAM,Agency
+ACC-0157,Urban Works,free,2,0.0,Europe,Finance
+ACC-0158,Harbor Ventures 14,free,1,0.0,North America,Finance
+ACC-0159,Bold Partners,free,1,0.0,Europe,Agency
+ACC-0160,Nova Foods,free,1,0.0,LATAM,Agency
+ACC-0161,Rapid Partners 65,free,1,0.0,APAC,Agency
+ACC-0162,Green Analytics 5,business,11,275.0,Europe,Healthcare
+ACC-0163,Urban Digital 44,business,11,275.0,North America,Nonprofit
+ACC-0164,Bright Capital 66,free,1,0.0,Europe,Retail
+ACC-0165,North Works,pro,3,36.0,LATAM,Finance
+ACC-0166,Iron Logistics,free,2,0.0,LATAM,Education
+ACC-0167,Blue Foods,pro,2,24.0,North America,Agency
+ACC-0168,Clear Health 2,pro,5,60.0,APAC,Software
+ACC-0169,Lucky Logistics 77,free,2,0.0,APAC,Healthcare
+ACC-0170,Bright Ventures 89,enterprise,94,3572.0,Europe,Nonprofit
+ACC-0171,Silver Foods,free,2,0.0,Europe,Agency
+ACC-0172,Silver Partners,pro,2,24.0,LATAM,Retail
+ACC-0173,Green Foods,pro,3,36.0,APAC,Nonprofit
+ACC-0174,North Capital 88,free,1,0.0,APAC,Software
+ACC-0175,Maple Media,free,2,0.0,LATAM,Agency
+ACC-0176,North Labs,free,1,0.0,Europe,Education
+ACC-0177,Silver Capital,pro,5,60.0,Europe,Finance
+ACC-0178,Bright Analytics,pro,4,48.0,North America,Education
+ACC-0179,Blue Foods 88,pro,3,36.0,North America,Finance
+ACC-0180,Blue Logistics 35,free,1,0.0,Europe,Nonprofit
+ACC-0181,Rapid Media 62,business,15,375.0,North America,Nonprofit
+ACC-0182,Iron Health,pro,2,24.0,APAC,Education
+ACC-0183,Quiet Labs,business,20,500.0,LATAM,Finance
+ACC-0184,Rapid Analytics 95,free,2,0.0,North America,Education
+ACC-0185,Blue Studio,business,12,300.0,North America,Retail
+ACC-0186,North Systems,free,1,0.0,Europe,Agency
+ACC-0187,Bright Robotics 81,free,1,0.0,North America,Retail
+ACC-0188,Summit Media 34,free,2,0.0,North America,Healthcare
+ACC-0189,Harbor Capital 6,free,1,0.0,Europe,Agency
+ACC-0190,Summit Analytics,free,1,0.0,APAC,Retail
+ACC-0191,North Foods,free,2,0.0,APAC,Software
+ACC-0192,Bold Digital 6,pro,4,48.0,LATAM,Retail
+ACC-0193,Rapid Ventures 33,free,1,0.0,Europe,Retail
+ACC-0194,Harbor Analytics 43,pro,3,36.0,LATAM,Healthcare
+ACC-0195,Harbor Digital 98,free,1,0.0,APAC,Healthcare
+ACC-0196,Nova Health 50,pro,3,36.0,APAC,Agency
+ACC-0197,Lucky Studio,free,1,0.0,LATAM,Healthcare
+ACC-0198,Bright Digital,free,1,0.0,Europe,Finance
+ACC-0199,Maple Labs 16,business,11,275.0,LATAM,Education
+ACC-0200,Blue Foods 30,free,2,0.0,Europe,Healthcare
+ACC-0201,North Ventures,pro,4,48.0,APAC,Healthcare
+ACC-0202,Summit Analytics 41,pro,3,36.0,Europe,Healthcare
+ACC-0203,Bright Systems 76,pro,4,48.0,LATAM,Education
+ACC-0204,Summit Health 33,free,2,0.0,Europe,Software
+ACC-0205,Harbor Analytics,pro,4,48.0,Europe,Nonprofit
+ACC-0206,North Media 47,free,1,0.0,LATAM,Finance
+ACC-0207,Bright Capital,pro,3,36.0,LATAM,Healthcare
+ACC-0208,Iron Analytics,enterprise,105,3990.0,LATAM,Healthcare
+ACC-0209,Iron Health 17,business,18,450.0,Europe,Nonprofit
+ACC-0210,Harbor Logistics 39,free,2,0.0,North America,Agency
+ACC-0211,Green Systems 46,free,2,0.0,APAC,Healthcare
+ACC-0212,Clear Health,free,1,0.0,North America,Finance
+ACC-0213,Iron Partners 39,free,1,0.0,North America,Nonprofit
+ACC-0214,Quiet Foods,pro,9,108.0,North America,Agency
+ACC-0215,Urban Logistics 12,pro,8,96.0,LATAM,Healthcare
+ACC-0216,Silver Digital 22,free,1,0.0,LATAM,Education
+ACC-0217,Green Digital 26,business,26,650.0,North America,Software
+ACC-0218,Urban Analytics 3,pro,4,48.0,North America,Software
+ACC-0219,Blue Digital 57,free,2,0.0,North America,Finance
+ACC-0220,Urban Digital 73,pro,6,72.0,North America,Finance
+ACC-0221,Urban Studio 50,business,46,1150.0,North America,Retail
+ACC-0222,Bold Logistics 58,free,1,0.0,North America,Nonprofit
+ACC-0223,Maple Media 16,pro,4,48.0,APAC,Healthcare
+ACC-0224,Blue Health 83,pro,4,48.0,APAC,Retail
+ACC-0225,Green Works,pro,5,60.0,Europe,Finance
+ACC-0226,Iron Labs 39,free,1,0.0,North America,Healthcare
+ACC-0227,Bold Logistics 73,pro,4,48.0,North America,Education
+ACC-0228,Maple Labs,pro,7,84.0,North America,Software
+ACC-0229,Maple Studio 93,pro,4,48.0,Europe,Agency
+ACC-0230,Urban Logistics 49,pro,2,24.0,North America,Education
+ACC-0231,Bright Robotics 62,free,1,0.0,Europe,Finance
+ACC-0232,Lucky Labs,pro,3,36.0,LATAM,Healthcare
+ACC-0233,Bold Partners 73,business,12,300.0,APAC,Software
+ACC-0234,Blue Robotics 92,business,12,300.0,North America,Healthcare
+ACC-0235,Rapid Systems 11,free,2,0.0,North America,Software
+ACC-0236,Blue Systems,free,1,0.0,LATAM,Education
+ACC-0237,Blue Foods 87,pro,6,72.0,LATAM,Finance
+ACC-0238,Bright Foods 76,free,2,0.0,LATAM,Agency
+ACC-0239,Summit Logistics,pro,5,60.0,North America,Software
+ACC-0240,Harbor Labs 36,business,31,775.0,Europe,Healthcare
+ACC-0241,Lucky Ventures 18,free,1,0.0,LATAM,Healthcare
+ACC-0242,Iron Systems 66,free,1,0.0,APAC,Retail
+ACC-0243,Silver Media,free,2,0.0,North America,Education
+ACC-0244,Summit Ventures 78,pro,3,36.0,North America,Education
+ACC-0245,Clear Partners 39,free,1,0.0,LATAM,Finance
+ACC-0246,Urban Foods 88,free,1,0.0,Europe,Education
+ACC-0247,Green Robotics 44,free,2,0.0,North America,Finance
+ACC-0248,Maple Capital 68,pro,8,96.0,LATAM,Finance
+ACC-0249,Green Foods 69,business,11,275.0,North America,Software
+ACC-0250,North Studio,free,1,0.0,APAC,Retail
+ACC-0251,Lucky Logistics 11,free,2,0.0,Europe,Retail
+ACC-0252,Bright Media 44,free,1,0.0,Europe,Nonprofit
+ACC-0253,Quiet Labs 43,free,2,0.0,APAC,Finance
+ACC-0254,North Partners 77,free,2,0.0,Europe,Retail
+ACC-0255,Maple Labs 27,free,1,0.0,Europe,Software
+ACC-0256,Nova Digital 36,free,1,0.0,North America,Finance
+ACC-0257,Harbor Works,free,1,0.0,LATAM,Nonprofit
+ACC-0258,Clear Analytics 8,pro,3,36.0,APAC,Software
+ACC-0259,Quiet Media,pro,2,24.0,LATAM,Finance
+ACC-0260,Green Robotics 26,free,2,0.0,LATAM,Agency
+ACC-0261,Harbor Robotics,free,1,0.0,North America,Healthcare
+ACC-0262,Silver Foods 20,pro,3,36.0,Europe,Nonprofit
+ACC-0263,Maple Robotics 88,free,1,0.0,APAC,Finance
+ACC-0264,Maple Systems,free,1,0.0,Europe,Healthcare
+ACC-0265,Lucky Digital 29,free,1,0.0,Europe,Agency
+ACC-0266,Lucky Systems,free,1,0.0,LATAM,Agency
+ACC-0267,Silver Capital 59,business,10,250.0,APAC,Nonprofit
+ACC-0268,North Digital 11,free,1,0.0,Europe,Retail
+ACC-0269,Green Studio 45,free,1,0.0,Europe,Healthcare
+ACC-0270,Blue Studio 6,business,11,275.0,LATAM,Education
+ACC-0271,Clear Capital 55,pro,4,48.0,Europe,Nonprofit
+ACC-0272,Urban Foods,free,1,0.0,North America,Agency
+ACC-0273,Iron Media 12,free,1,0.0,APAC,Nonprofit
+ACC-0274,Urban Logistics,business,17,425.0,LATAM,Education
+ACC-0275,Bright Health 74,free,1,0.0,Europe,Finance
+ACC-0276,Silver Robotics 32,pro,2,24.0,Europe,Finance
+ACC-0277,Bold Studio,free,1,0.0,APAC,Retail
+ACC-0278,Summit Labs,pro,3,36.0,APAC,Software
+ACC-0279,Lucky Foods 23,pro,6,72.0,APAC,Education
+ACC-0280,Silver Media 68,pro,3,36.0,APAC,Finance
+ACC-0281,Nova Partners 19,pro,2,24.0,Europe,Software
+ACC-0282,Bold Analytics,free,2,0.0,LATAM,Nonprofit
+ACC-0283,North Logistics 73,free,2,0.0,APAC,Agency
+ACC-0284,Blue Labs 12,free,2,0.0,LATAM,Finance
+ACC-0285,Green Capital 4,pro,3,36.0,APAC,Agency
+ACC-0286,Bold Health 27,free,1,0.0,LATAM,Software
+ACC-0287,Harbor Works 16,free,1,0.0,APAC,Nonprofit
+ACC-0288,Iron Foods,free,1,0.0,North America,Education
+ACC-0289,Silver Health 85,pro,3,36.0,North America,Finance
+ACC-0290,Harbor Robotics 76,business,19,475.0,LATAM,Agency
+ACC-0291,Lucky Media 56,free,1,0.0,APAC,Nonprofit
+ACC-0292,Nova Works 76,free,2,0.0,LATAM,Retail
+ACC-0293,Green Analytics 41,pro,2,24.0,APAC,Agency
+ACC-0294,Harbor Systems 82,pro,4,48.0,APAC,Retail
+ACC-0295,Harbor Labs,pro,3,36.0,LATAM,Nonprofit
+ACC-0296,Green Systems 51,enterprise,134,5092.0,Europe,Nonprofit
+ACC-0297,Harbor Works 65,business,15,375.0,Europe,Finance
+ACC-0298,Harbor Logistics 48,business,18,450.0,North America,Finance
+ACC-0299,Quiet Partners,pro,3,36.0,North America,Agency
+ACC-0300,Summit Works 74,free,1,0.0,Europe,Finance
+ACC-0301,Blue Capital,pro,3,36.0,Europe,Retail
+ACC-0302,Rapid Partners 10,free,2,0.0,LATAM,Software
+ACC-0303,Green Analytics 73,pro,4,48.0,North America,Finance
+ACC-0304,Bright Works 87,pro,3,36.0,LATAM,Nonprofit
+ACC-0305,North Capital 20,pro,4,48.0,LATAM,Nonprofit
+ACC-0306,Iron Systems,free,2,0.0,North America,Healthcare
+ACC-0307,North Digital,free,1,0.0,North America,Agency
+ACC-0308,Urban Digital 55,free,1,0.0,North America,Retail
+ACC-0309,Rapid Works,free,1,0.0,APAC,Agency
+ACC-0310,North Media 10,business,12,300.0,APAC,Finance
+ACC-0311,Iron Labs 55,free,1,0.0,Europe,Finance
+ACC-0312,Clear Media 7,free,1,0.0,APAC,Retail
+ACC-0313,Iron Capital,free,2,0.0,Europe,Software
+ACC-0314,Silver Robotics,pro,3,36.0,North America,Education
+ACC-0315,Quiet Partners 21,free,1,0.0,APAC,Agency
+ACC-0316,Bright Health 60,business,41,1025.0,APAC,Education
+ACC-0317,Bold Studio 83,business,18,450.0,Europe,Finance
+ACC-0318,Clear Health 82,free,1,0.0,Europe,Software
+ACC-0319,North Logistics 75,free,2,0.0,APAC,Finance
+ACC-0320,North Logistics 36,pro,3,36.0,APAC,Education
+ACC-0321,Lucky Works 81,enterprise,242,9196.0,North America,Nonprofit
+ACC-0322,Clear Analytics,free,2,0.0,North America,Nonprofit
+ACC-0323,Rapid Logistics,pro,3,36.0,Europe,Agency
+ACC-0324,Lucky Analytics 56,pro,2,24.0,LATAM,Retail
+ACC-0325,Green Labs 45,business,19,475.0,APAC,Finance
+ACC-0326,Bright Systems 14,free,2,0.0,LATAM,Education
+ACC-0327,Harbor Health 70,free,1,0.0,Europe,Healthcare
+ACC-0328,Silver Systems 59,enterprise,89,3382.0,LATAM,Software
+ACC-0329,Blue Works 21,free,1,0.0,Europe,Education
+ACC-0330,Urban Digital 95,free,1,0.0,LATAM,Education
+ACC-0331,Silver Capital 62,pro,2,24.0,Europe,Healthcare
+ACC-0332,North Ventures 76,free,1,0.0,LATAM,Retail
+ACC-0333,Blue Labs,pro,10,120.0,North America,Retail
+ACC-0334,Harbor Studio 9,free,1,0.0,APAC,Healthcare
+ACC-0335,North Partners 47,business,13,325.0,Europe,Retail
+ACC-0336,North Studio 81,free,1,0.0,North America,Finance
+ACC-0337,Green Labs 83,pro,2,24.0,North America,Education
+ACC-0338,Maple Robotics 89,free,2,0.0,LATAM,Finance
+ACC-0339,Bold Logistics 37,free,1,0.0,North America,Nonprofit
+ACC-0340,Blue Works 92,free,1,0.0,Europe,Finance
+ACC-0341,Bold Works 63,free,2,0.0,Europe,Software
+ACC-0342,North Digital 73,free,1,0.0,LATAM,Healthcare
+ACC-0343,Iron Partners 76,pro,3,36.0,North America,Nonprofit
+ACC-0344,Maple Logistics 6,free,1,0.0,North America,Nonprofit
+ACC-0345,Urban Studio 57,free,1,0.0,LATAM,Nonprofit
+ACC-0346,Iron Analytics 5,enterprise,117,4446.0,North America,Agency
+ACC-0347,Blue Robotics 26,business,28,700.0,APAC,Finance
+ACC-0348,Lucky Partners 95,business,17,425.0,APAC,Agency
+ACC-0349,Lucky Capital 87,free,1,0.0,Europe,Retail
+ACC-0350,Clear Robotics 25,free,1,0.0,Europe,Education
+ACC-0351,Harbor Health,free,1,0.0,North America,Education
+ACC-0352,Rapid Works 65,free,1,0.0,Europe,Agency
+ACC-0353,Green Media 10,free,1,0.0,APAC,Healthcare
+ACC-0354,Blue Ventures 92,free,2,0.0,LATAM,Software
+ACC-0355,Summit Studio,free,1,0.0,APAC,Healthcare
+ACC-0356,Blue Ventures 28,free,1,0.0,APAC,Finance
+ACC-0357,Clear Logistics 11,business,18,450.0,APAC,Education
+ACC-0358,Bright Analytics 90,free,2,0.0,North America,Retail
+ACC-0359,Clear Media 75,free,1,0.0,North America,Retail
+ACC-0360,Nova Logistics 36,pro,3,36.0,Europe,Retail
+ACC-0361,Summit Logistics 28,free,2,0.0,APAC,Software
+ACC-0362,Blue Logistics 7,free,1,0.0,APAC,Software
+ACC-0363,Maple Partners,free,2,0.0,North America,Retail
+ACC-0364,Nova Logistics 28,free,2,0.0,Europe,Education
+ACC-0365,Blue Partners 35,pro,7,84.0,North America,Finance
+ACC-0366,Blue Labs 6,free,1,0.0,North America,Nonprofit
+ACC-0367,Clear Media 6,free,1,0.0,Europe,Software
+ACC-0368,Lucky Studio 26,pro,3,36.0,LATAM,Agency
+ACC-0369,Urban Logistics 25,business,14,350.0,APAC,Agency
+ACC-0370,North Health 62,free,2,0.0,North America,Agency
+ACC-0371,Nova Works 81,free,1,0.0,Europe,Retail
+ACC-0372,Clear Logistics,free,2,0.0,Europe,Agency
+ACC-0373,Blue Labs 42,enterprise,202,7676.0,North America,Agency
+ACC-0374,Bright Labs 66,business,29,725.0,North America,Nonprofit
+ACC-0375,Silver Media 36,free,2,0.0,LATAM,Finance
+ACC-0376,Lucky Digital,enterprise,92,3496.0,North America,Finance
+ACC-0377,Harbor Digital 44,free,1,0.0,Europe,Retail
+ACC-0378,Rapid Health 6,free,1,0.0,LATAM,Healthcare
+ACC-0379,Maple Foods,free,1,0.0,LATAM,Software
+ACC-0380,Bright Media 36,business,35,875.0,Europe,Agency
+ACC-0381,Iron Robotics 88,free,1,0.0,APAC,Nonprofit
+ACC-0382,Summit Robotics 77,free,1,0.0,Europe,Nonprofit
+ACC-0383,Blue Systems 64,pro,3,36.0,APAC,Education
+ACC-0384,Maple Capital 21,free,1,0.0,North America,Finance
+ACC-0385,Lucky Robotics 80,free,2,0.0,APAC,Retail
+ACC-0386,Rapid Ventures 92,free,1,0.0,Europe,Software
+ACC-0387,Lucky Media,business,22,550.0,Europe,Finance
+ACC-0388,Harbor Systems 73,pro,3,36.0,Europe,Education
+ACC-0389,Summit Ventures 39,pro,2,24.0,LATAM,Finance
+ACC-0390,Lucky Media 96,pro,3,36.0,LATAM,Education
+ACC-0391,Green Works 31,pro,3,36.0,North America,Agency
+ACC-0392,Quiet Logistics 18,business,12,300.0,APAC,Education
+ACC-0393,Nova Robotics 44,pro,3,36.0,LATAM,Agency
+ACC-0394,Bright Health,pro,3,36.0,Europe,Software
+ACC-0395,Bright Studio,free,2,0.0,Europe,Software
+ACC-0396,Nova Logistics 5,free,1,0.0,APAC,Finance
+ACC-0397,Clear Foods 10,pro,3,36.0,APAC,Finance
+ACC-0398,North Logistics 71,free,1,0.0,North America,Nonprofit
+ACC-0399,Harbor Digital 86,business,11,275.0,LATAM,Software
+ACC-0400,Nova Media 98,pro,3,36.0,APAC,Healthcare
+ACC-0401,Lucky Labs 16,free,1,0.0,Europe,Retail
+ACC-0402,North Partners 2,business,15,375.0,APAC,Healthcare
+ACC-0403,Urban Works 68,free,1,0.0,APAC,Nonprofit
+ACC-0404,Urban Systems 67,free,1,0.0,APAC,Nonprofit
+ACC-0405,Summit Studio 13,free,1,0.0,APAC,Healthcare
+ACC-0406,Iron Labs 92,enterprise,317,12046.0,North America,Retail
+ACC-0407,Nova Partners,pro,3,36.0,LATAM,Finance
+ACC-0408,Silver Digital 61,pro,6,72.0,Europe,Retail
+ACC-0409,Iron Robotics 93,free,2,0.0,APAC,Agency
+ACC-0410,Quiet Media 38,pro,3,36.0,LATAM,Retail
+ACC-0411,Lucky Capital 88,pro,4,48.0,APAC,Retail
+ACC-0412,Quiet Ventures 5,pro,7,84.0,LATAM,Nonprofit
+ACC-0413,Bold Capital,business,10,250.0,North America,Healthcare
+ACC-0414,Clear Media 76,free,1,0.0,APAC,Software
+ACC-0415,Lucky Health 85,free,1,0.0,LATAM,Retail
+ACC-0416,Maple Capital 25,pro,2,24.0,North America,Education
+ACC-0417,North Media 30,business,28,700.0,North America,Finance
+ACC-0418,Bright Ventures 93,free,3,0.0,LATAM,Software
+ACC-0419,Bold Systems,pro,2,24.0,LATAM,Software
+ACC-0420,Iron Works 52,free,2,0.0,North America,Agency
+ACC-0421,Bold Studio 8,pro,3,36.0,Europe,Software
+ACC-0422,Silver Studio 78,pro,3,36.0,APAC,Agency
+ACC-0423,Summit Digital 13,free,2,0.0,Europe,Finance
+ACC-0424,Silver Digital 82,pro,2,24.0,APAC,Nonprofit
+ACC-0425,Quiet Studio 18,free,2,0.0,APAC,Agency
+ACC-0426,Urban Media 94,business,16,400.0,Europe,Finance
+ACC-0427,Bold Systems 18,free,1,0.0,LATAM,Software
+ACC-0428,Clear Digital,free,1,0.0,North America,Finance
+ACC-0429,Quiet Robotics 54,pro,5,60.0,North America,Finance
+ACC-0430,Iron Media 64,free,1,0.0,LATAM,Software
+ACC-0431,Clear Media 33,pro,2,24.0,Europe,Nonprofit
+ACC-0432,Maple Digital 59,free,1,0.0,Europe,Healthcare
+ACC-0433,Maple Partners 57,pro,3,36.0,LATAM,Education
+ACC-0434,Nova Robotics 17,pro,3,36.0,Europe,Software
+ACC-0435,North Logistics 63,business,27,675.0,Europe,Retail
+ACC-0436,Nova Studio,free,2,0.0,LATAM,Retail
+ACC-0437,Clear Analytics 38,free,2,0.0,Europe,Software
+ACC-0438,Silver Capital 35,pro,4,48.0,Europe,Healthcare
+ACC-0439,Silver Logistics 58,pro,10,120.0,Europe,Software
+ACC-0440,Summit Studio 80,free,1,0.0,LATAM,Finance
+ACC-0441,Summit Digital 15,pro,7,84.0,LATAM,Software
+ACC-0442,Urban Systems,free,1,0.0,LATAM,Education
+ACC-0443,Quiet Logistics 35,free,1,0.0,LATAM,Education
+ACC-0444,Lucky Labs 64,business,23,575.0,LATAM,Finance
+ACC-0445,North Studio 8,free,1,0.0,LATAM,Healthcare
+ACC-0446,Rapid Ventures 30,free,1,0.0,Europe,Healthcare
+ACC-0447,Iron Digital 2,pro,11,132.0,APAC,Software
+ACC-0448,Blue Studio 69,pro,2,24.0,Europe,Retail
+ACC-0449,Rapid Foods,pro,9,108.0,Europe,Healthcare
+ACC-0450,Rapid Systems,pro,4,48.0,Europe,Education
+ACC-0451,Harbor Logistics 90,free,1,0.0,North America,Agency
+ACC-0452,Blue Partners 37,pro,6,72.0,APAC,Retail
+ACC-0453,Clear Health 41,pro,5,60.0,North America,Education
+ACC-0454,North Ventures 33,pro,3,36.0,LATAM,Education
+ACC-0455,Summit Analytics 90,pro,2,24.0,Europe,Finance
+ACC-0456,Clear Digital 87,free,2,0.0,North America,Agency
+ACC-0457,Iron Partners 75,pro,7,84.0,APAC,Healthcare
+ACC-0458,Bright Health 46,free,2,0.0,Europe,Education
+ACC-0459,Bright Analytics 48,pro,3,36.0,North America,Agency
+ACC-0460,Summit Works 7,free,1,0.0,Europe,Finance
+ACC-0461,Silver Logistics 35,free,2,0.0,LATAM,Retail
+ACC-0462,Nova Logistics 44,pro,2,24.0,APAC,Nonprofit
+ACC-0463,Rapid Logistics 54,free,2,0.0,APAC,Nonprofit
+ACC-0464,Blue Analytics 94,free,1,0.0,North America,Retail
+ACC-0465,Quiet Systems 9,pro,13,156.0,North America,Agency
+ACC-0466,Bold Media 97,free,1,0.0,Europe,Healthcare
+ACC-0467,Lucky Media 5,business,13,325.0,LATAM,Finance
+ACC-0468,Quiet Foods 50,pro,5,60.0,APAC,Nonprofit
+ACC-0469,Blue Health 67,free,1,0.0,North America,Software
+ACC-0470,Clear Analytics 12,pro,2,24.0,LATAM,Finance
+ACC-0471,Clear Capital 48,free,1,0.0,LATAM,Nonprofit
+ACC-0472,Bold Labs 79,free,2,0.0,North America,Healthcare
+ACC-0473,Maple Logistics 26,business,21,525.0,LATAM,Healthcare
+ACC-0474,Harbor Logistics 63,pro,6,72.0,Europe,Education
+ACC-0475,Bright Labs,pro,9,108.0,LATAM,Nonprofit
+ACC-0476,Clear Systems,pro,5,60.0,North America,Retail
+ACC-0477,Rapid Analytics 21,pro,6,72.0,LATAM,Finance
+ACC-0478,Nova Analytics 28,pro,4,48.0,LATAM,Retail
+ACC-0479,Lucky Health 55,free,2,0.0,Europe,Nonprofit
+ACC-0480,Silver Works 76,free,1,0.0,Europe,Finance
+ACC-0481,Silver Capital 9,free,2,0.0,Europe,Finance
+ACC-0482,Silver Robotics 51,free,1,0.0,APAC,Nonprofit
+ACC-0483,North Works 54,free,1,0.0,North America,Nonprofit
+ACC-0484,Clear Logistics 33,enterprise,401,15238.0,North America,Nonprofit
+ACC-0485,Nova Health 17,free,1,0.0,North America,Nonprofit
+ACC-0486,Summit Systems,free,2,0.0,LATAM,Retail
+ACC-0487,Bold Studio 82,free,1,0.0,LATAM,Finance
+ACC-0488,Silver Works,pro,4,48.0,APAC,Agency
+ACC-0489,Quiet Labs 3,business,16,400.0,LATAM,Retail
+ACC-0490,Clear Works 55,business,19,475.0,North America,Finance
+ACC-0491,Lucky Logistics 24,free,1,0.0,APAC,Finance
+ACC-0492,Lucky Systems 30,free,1,0.0,North America,Healthcare
+ACC-0493,Silver Capital 4,business,12,300.0,LATAM,Software
+ACC-0494,Bold Studio 81,free,2,0.0,Europe,Healthcare
+ACC-0495,Maple Ventures 28,pro,3,36.0,North America,Finance
+ACC-0496,North Systems 43,free,1,0.0,Europe,Software
+ACC-0497,Blue Foods 41,business,18,450.0,APAC,Software
+ACC-0498,Green Health,free,1,0.0,LATAM,Healthcare
+ACC-0499,Quiet Logistics 17,free,2,0.0,LATAM,Retail
+ACC-0500,Harbor Health 46,free,2,0.0,APAC,Agency
+ACC-0501,Harbor Foods 6,free,1,0.0,LATAM,Healthcare
+ACC-0502,Summit Capital 40,pro,2,24.0,APAC,Nonprofit
+ACC-0503,Quiet Robotics 13,pro,2,24.0,APAC,Finance
+ACC-0504,Rapid Capital 42,free,1,0.0,North America,Retail
+ACC-0505,Rapid Analytics 8,pro,8,96.0,LATAM,Agency
+ACC-0506,Nova Media 20,free,1,0.0,APAC,Finance
+ACC-0507,Quiet Studio 21,free,2,0.0,LATAM,Agency
+ACC-0508,North Logistics,free,2,0.0,APAC,Software
+ACC-0509,Blue Health 12,free,1,0.0,Europe,Retail
+ACC-0510,Blue Capital 83,free,1,0.0,North America,Education
+ACC-0511,Bright Works 7,pro,4,48.0,LATAM,Education
+ACC-0512,Bold Logistics 69,pro,8,96.0,APAC,Retail
+ACC-0513,Rapid Digital,free,1,0.0,North America,Nonprofit
+ACC-0514,Blue Health,pro,3,36.0,LATAM,Education
+ACC-0515,Clear Analytics 14,pro,4,48.0,LATAM,Software
+ACC-0516,Iron Works 86,free,1,0.0,North America,Software
+ACC-0517,Maple Digital,free,1,0.0,Europe,Software
+ACC-0518,North Health 23,pro,2,24.0,LATAM,Retail
+ACC-0519,Silver Labs 29,free,1,0.0,Europe,Software
+ACC-0520,Blue Works 39,pro,2,24.0,Europe,Software
+ACC-0521,Silver Media 28,free,1,0.0,North America,Software
+ACC-0522,Silver Media 38,pro,3,36.0,Europe,Agency
+ACC-0523,Blue Analytics 69,free,1,0.0,APAC,Agency
+ACC-0524,Green Media,free,1,0.0,LATAM,Agency
+ACC-0525,Bold Foods 36,free,2,0.0,LATAM,Finance
+ACC-0526,Urban Digital 50,pro,2,24.0,Europe,Software
+ACC-0527,Summit Capital 85,free,1,0.0,North America,Retail
+ACC-0528,Green Foods 81,enterprise,139,5282.0,LATAM,Software
+ACC-0529,Bright Logistics 51,free,2,0.0,APAC,Nonprofit
+ACC-0530,Maple Capital 23,free,1,0.0,APAC,Healthcare
+ACC-0531,Nova Digital 53,free,1,0.0,North America,Education
+ACC-0532,Nova Digital 78,free,1,0.0,North America,Software
+ACC-0533,Iron Capital 35,free,2,0.0,LATAM,Software
+ACC-0534,Bright Analytics 41,pro,9,108.0,APAC,Retail
+ACC-0535,Clear Foods 54,pro,4,48.0,Europe,Education
+ACC-0536,Quiet Partners 13,free,1,0.0,LATAM,Agency
+ACC-0537,Clear Robotics 2,free,1,0.0,LATAM,Nonprofit
+ACC-0538,Blue Digital 5,free,1,0.0,Europe,Finance
+ACC-0539,Rapid Studio,pro,6,72.0,APAC,Software
+ACC-0540,Quiet Labs 44,free,2,0.0,Europe,Healthcare
+ACC-0541,Bright Studio 64,business,30,750.0,LATAM,Software
+ACC-0542,Silver Studio 40,pro,3,36.0,APAC,Healthcare
+ACC-0543,Silver Systems 43,pro,2,24.0,North America,Nonprofit
+ACC-0544,Silver Logistics 74,pro,2,24.0,APAC,Education
+ACC-0545,Summit Media 94,pro,2,24.0,North America,Education
+ACC-0546,Green Logistics 34,free,1,0.0,Europe,Agency
+ACC-0547,Nova Labs 6,free,1,0.0,Europe,Software
+ACC-0548,Clear Health 22,free,1,0.0,APAC,Education
+ACC-0549,Lucky Ventures,free,1,0.0,North America,Education
+ACC-0550,Nova Systems 22,free,2,0.0,Europe,Software
+ACC-0551,Lucky Works 98,free,1,0.0,APAC,Healthcare
+ACC-0552,Bright Logistics 32,pro,4,48.0,APAC,Education
+ACC-0553,Bold Works 66,free,1,0.0,APAC,Agency
+ACC-0554,Rapid Analytics 87,free,1,0.0,North America,Agency
+ACC-0555,Rapid Works 36,free,2,0.0,Europe,Retail
+ACC-0556,Rapid Analytics 92,free,2,0.0,LATAM,Healthcare
+ACC-0557,Harbor Foods 44,enterprise,130,4940.0,Europe,Nonprofit
+ACC-0558,Summit Labs 38,free,1,0.0,Europe,Healthcare
+ACC-0559,Nova Robotics 54,free,1,0.0,Europe,Agency
+ACC-0560,Nova Systems 40,free,2,0.0,North America,Education
+ACC-0561,Clear Media 92,free,2,0.0,APAC,Education
+ACC-0562,Urban Media 34,free,1,0.0,North America,Nonprofit
+ACC-0563,North Capital 60,free,2,0.0,Europe,Agency
+ACC-0564,Lucky Health,free,1,0.0,LATAM,Healthcare
+ACC-0565,Harbor Media 88,free,1,0.0,LATAM,Software
+ACC-0566,Clear Analytics 39,pro,2,24.0,APAC,Software
+ACC-0567,Summit Ventures,free,1,0.0,North America,Healthcare
+ACC-0568,Urban Studio 83,pro,6,72.0,North America,Retail
+ACC-0569,Quiet Analytics,free,1,0.0,APAC,Retail
+ACC-0570,Urban Logistics 65,free,2,0.0,North America,Healthcare
+ACC-0571,Bright Media 35,pro,2,24.0,North America,Software
+ACC-0572,North Studio 44,free,2,0.0,Europe,Retail
+ACC-0573,Urban Media,business,12,300.0,LATAM,Software
+ACC-0574,Quiet Studio 7,business,20,500.0,LATAM,Healthcare
+ACC-0575,Silver Foods 94,pro,3,36.0,Europe,Agency
+ACC-0576,Quiet Studio 97,free,1,0.0,Europe,Nonprofit
+ACC-0577,Iron Logistics 52,pro,7,84.0,LATAM,Software
+ACC-0578,Iron Studio 82,pro,2,24.0,LATAM,Software
+ACC-0579,Silver Logistics 7,pro,5,60.0,LATAM,Finance
+ACC-0580,Urban Robotics 8,free,1,0.0,LATAM,Software
+ACC-0581,Green Systems 88,business,16,400.0,Europe,Nonprofit
+ACC-0582,Rapid Digital 97,business,45,1125.0,APAC,Software
+ACC-0583,Lucky Studio 18,free,1,0.0,LATAM,Nonprofit
+ACC-0584,Quiet Systems 34,free,1,0.0,Europe,Nonprofit
+ACC-0585,Green Labs 41,free,1,0.0,APAC,Software
+ACC-0586,Iron Capital 45,business,55,1375.0,North America,Finance
+ACC-0587,Nova Robotics 16,business,14,350.0,Europe,Software
+ACC-0588,Maple Robotics 64,enterprise,143,5434.0,North America,Finance
+ACC-0589,Bold Robotics 17,pro,3,36.0,APAC,Agency
+ACC-0590,Green Digital 28,pro,2,24.0,APAC,Nonprofit
+ACC-0591,North Digital 22,pro,4,48.0,APAC,Agency
+ACC-0592,Rapid Robotics 95,pro,3,36.0,APAC,Agency
+ACC-0593,Green Capital 81,business,13,325.0,Europe,Retail
+ACC-0594,Harbor Studio 22,pro,2,24.0,APAC,Healthcare
+ACC-0595,Green Media 23,free,2,0.0,North America,Retail
+ACC-0596,Summit Capital 34,free,2,0.0,Europe,Nonprofit
+ACC-0597,Quiet Systems 2,free,1,0.0,LATAM,Retail
+ACC-0598,Clear Capital 36,pro,3,36.0,North America,Nonprofit
+ACC-0599,Summit Works,pro,6,72.0,North America,Healthcare
+ACC-0600,Quiet Studio 35,free,1,0.0,Europe,Education

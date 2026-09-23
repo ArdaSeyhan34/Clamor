@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.env
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Clamor outputs (the committed demo report lives in reports/demo)
+reports/*
+!reports/demo/
+.clamor_cache/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

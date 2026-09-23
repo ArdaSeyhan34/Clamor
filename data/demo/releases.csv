@@ -1,0 +1,7 @@
+date,version,title,description
+2026-02-12,v3.1,Guided onboarding,"A new setup wizard and checklist that walks new workspaces through inviting the team, so first-time setup is no longer confusing."
+2026-02-26,pricing-2026-02,Pro plan price update,The Pro plan price per seat increases from $10 to $12 per month.
+2026-03-12,v3.2,Sync engine 2.0,Rebuilt the Google Calendar and Outlook sync engine for faster two-way sync.
+2026-04-16,v3.3,Sync hotfix,Fixes duplicate events and events that failed to sync with Google Calendar and Outlook.
+2026-05-14,v3.4,Android performance pass,"Faster startup, less lag and smoother scrolling in the Android app."
+2026-06-11,v3.5,Recurring events editor,Redesigned editor for recurring meetings with custom repeat rules.
