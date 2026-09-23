@@ -40,7 +40,6 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
     if road.empty:
         return out
     window = analysis.config.score_window_days
-    who = "accounts" if analysis.has_revenue else "users"  # no revenue: end-user feedback
 
     top = road.iloc[0]
     drivers = {
@@ -55,8 +54,8 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
             "priority",
             f"Top priority: {_name(top)}",
             f"Score {top['score']:.0f}/100, driven mostly by {main[0]} and {main[1]}: "
-            f"{int(top['mentions'])} mentions from {int(top['accounts'])} {who} in the last "
-            f"{window} days.",
+            f"{int(top['mentions'])} mentions from {int(top['accounts'])} {analysis.people} "
+            f"in the last {window} days.",
         )
     )
 

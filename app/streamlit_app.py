@@ -256,7 +256,7 @@ st.title("What should we build next?")
 fb = analysis.feedback[analysis.feedback["created_at"] < analysis.as_of + pd.Timedelta(days=1)]
 cols = st.columns(5)
 cols[0].metric("Feedback items", f"{len(fb):,}")
-cols[1].metric("Accounts", f"{fb['account_id'].nunique():,}")
+cols[1].metric(analysis.people.capitalize(), f"{fb['account_id'].nunique():,}")
 cols[2].metric("Themes", len(themes))
 cols[3].metric("Early warnings", int(themes["status"].isin(["new", "emerging"]).sum()))
 if analysis.has_revenue:
@@ -320,7 +320,7 @@ with tab_theme:
         )
         m = st.columns(4)
         m[0].metric(f"Mentions ({config.score_window_days}d)", int(row["mentions"]))
-        m[1].metric("Accounts", int(row["accounts"]))
+        m[1].metric(analysis.people.capitalize(), int(row["accounts"]))
         m[2].metric("Sentiment", f"{row['mean_sentiment']:+.2f}")
         m[3].metric("Trend", STATUS_ICON.get(row["status"], row["status"]))
         st.plotly_chart(

@@ -47,6 +47,11 @@ class Analysis:
     def roadmap(self) -> pd.DataFrame:
         return self.themes[self.themes["score"].notna()]
 
+    @property
+    def people(self) -> str:
+        """What the IDs stand for: paying accounts, or the users of a consumer app."""
+        return "accounts" if self.has_revenue else "users"
+
 
 def build_theme_model(
     feedback: pd.DataFrame,

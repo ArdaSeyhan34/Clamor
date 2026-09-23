@@ -61,7 +61,7 @@ def roadmap_table(analysis: Analysis, top_n: int | None = None) -> pd.DataFrame:
             "Type": road["kind"].map(KIND),
             "Score": road["score"].round(1),
             "Mentions": road["mentions"].astype(int),
-            "Accounts": road["accounts"].astype(int),
+            analysis.people.capitalize(): road["accounts"].astype(int),
             "Trend": road["status"].map(STATUS_ICON),
             "Rank by mentions": road["vote_rank"].astype(int),
         }
@@ -105,7 +105,7 @@ def to_markdown(analysis: Analysis, evaluation: dict | None = None) -> str:
     lines = [
         "# Clamor report",
         "",
-        f"*{len(fb):,} feedback items from {fb['account_id'].nunique():,} accounts, "
+        f"*{len(fb):,} feedback items from {fb['account_id'].nunique():,} {analysis.people}, "
         f"{fb['created_at'].min():%b %d, %Y} to {analysis.as_of:%b %d, %Y}. "
         f"{len(analysis.themes)} themes discovered with the `{analysis.model.backend}` "
         f"embedding backend. Priority reflects the last {window} days.*",
@@ -293,7 +293,7 @@ def to_html(
         timeline_themes = default_timeline_themes(analysis)
     tiles = [
         ("feedback items", f"{len(fb):,}"),
-        ("accounts", f"{fb['account_id'].nunique():,}"),
+        (analysis.people, f"{fb['account_id'].nunique():,}"),
         ("themes", str(len(analysis.themes))),
         ("early warnings", str(int(analysis.themes["status"].isin(["new", "emerging"]).sum()))),
     ]

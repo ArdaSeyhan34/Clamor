@@ -28,13 +28,13 @@ KIND_LABEL = {
 
 OPTIONS_BY_KIND = {
     "bug": [
-        "Reproduce with the accounts behind these quotes and add monitoring on the failing path",
+        "Reproduce with the {people} behind these quotes and add monitoring on the failing path",
         "Ship a targeted fix behind a flag and watch this theme's mention rate afterwards",
-        "Proactively tell affected accounts what happened and when it will be fixed",
+        "Proactively tell affected {people} what happened and when it will be fixed",
     ],
     "feature_request": [
-        "Interview 5 of the requesting accounts to find the job behind the request",
-        "Scope the smallest version that unblocks the highest-revenue requesters",
+        "Interview 5 of the requesting {people} to find the job behind the request",
+        "Scope the smallest version that unblocks the {key} requesters",
         "Check whether an integration or workaround covers most of the need today",
     ],
     "ux": [
@@ -70,7 +70,7 @@ def theme_evidence(analysis: Analysis, theme_id: str) -> dict:
         "share_of_all_feedback": round(float(row["share"]), 4),
         "mean_sentiment_-1_to_1": round(float(row["mean_sentiment"]), 2),
         "negative_share": round(float(row["negative_share"]), 2),
-        "plan_mix": row["plan_mix"],
+        "people": analysis.people,  # "accounts", or "users" for a consumer app
         "channel_mix": row["channel_mix"],
         "trend": {
             "status": row["status"],
@@ -85,6 +85,7 @@ def theme_evidence(analysis: Analysis, theme_id: str) -> dict:
         "quotes": list(row["examples"])[:8],
     }
     if analysis.has_revenue:
+        evidence["plan_mix"] = row["plan_mix"]
         evidence["arr_of_accounts_raising_it"] = round(float(row["arr_exposed"]))
         evidence["revenue_weighted_demand_mrr"] = round(float(row["mrr_weighted"]))
     if pd.notna(row.get("score")):
@@ -114,8 +115,9 @@ def template_brief(ev: dict) -> str:
     window = next(k for k in ev if k.startswith("mentions_last_")).split("_")[2]
     mentions = ev[f"mentions_last_{window}_days"]
     accounts = ev[f"accounts_last_{window}_days"]
+    people = ev.get("people", "accounts")
     plans = ", ".join(
-        f"{k} {v:.0%}" for k, v in sorted(ev["plan_mix"].items(), key=lambda kv: -kv[1])[:3]
+        f"{k} {v:.0%}" for k, v in sorted(ev.get("plan_mix", {}).items(), key=lambda kv: -kv[1])[:3]
     )
     channels = ", ".join(
         f"{k.replace('_', ' ')} {v:.0%}"
@@ -138,7 +140,11 @@ def template_brief(ev: dict) -> str:
             f"(95% CI {lo:.2f}-{hi:.2f}, FDR q {format_q(trend['fdr_q_value'])})."
         )
     kind_key = next((k for k, v in KIND_LABEL.items() if v == ev["type"]), "ux")
-    options = OPTIONS_BY_KIND.get(kind_key, OPTIONS_BY_KIND["ux"])
+    key = "highest-revenue" if "arr_of_accounts_raising_it" in ev else "most frequent"
+    options = [
+        o.format(people=people, key=key)
+        for o in OPTIONS_BY_KIND.get(kind_key, OPTIONS_BY_KIND["ux"])
+    ]
 
     lines = [
         f"## {ev['name']}",
@@ -149,10 +155,10 @@ def template_brief(ev: dict) -> str:
         f"Customers report: “{ev['representative_quote']}.”",
         "",
         "### Who is affected",
-        f"- **{mentions}** mentions from **{accounts}** accounts in the last {window} days "
+        f"- **{mentions}** mentions from **{accounts}** {people} in the last {window} days "
         f"({ev['mentions_all_time']} all time; {ev['share_of_all_feedback']:.1%} of all feedback "
         "in that window)",
-        f"- Plans: {plans}",
+        *([f"- Plans: {plans}"] if plans else []),
         f"- Channels: {channels}",
     ]
     if "arr_of_accounts_raising_it" in ev:
@@ -192,7 +198,7 @@ def template_brief(ev: dict) -> str:
         "- Sentiment of remaining mentions improves; no new theme spikes after the release",
         "",
         "### Open questions",
-        "- Which of the quoted accounts can we talk to this week?",
+        f"- Which of the quoted {people} can we talk to this week?",
         "- Is there usage data that confirms the size of the problem?",
     ]
     return "\n".join(lines)

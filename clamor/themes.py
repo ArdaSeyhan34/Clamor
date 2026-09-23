@@ -264,9 +264,15 @@ def _headline(
             return ()
         return (-sum(not c.isascii() for c in t), -sum(c.isupper() for c in t))
 
-    best = min(
-        top,
-        key=lambda i: (len(texts[i]) > 90, -counts[key(texts[i])], *quality(texts[i]), -sims[i]),
+    best = min(  # similarity rounded, then the text itself: ties stay reproducible even
+        top,  # though ONNX Runtime's multi-threaded sums differ in the last float bits
+        key=lambda i: (
+            len(texts[i]) > 90,
+            -counts[key(texts[i])],
+            *quality(texts[i]),
+            -round(float(sims[i]), 5),
+            texts[i],
+        ),
     )
     if lang.code != "en":  # the best-spelled variant of that wording anywhere in the theme
         same = [t for t in texts if key(t) == key(texts[best])]
