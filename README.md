@@ -2,7 +2,7 @@
 
 **Turn the noise of customer feedback into a prioritized, evidence-backed product roadmap.**
 
-[![CI](https://github.com/ArdaSeyhan34/NewRepo/actions/workflows/ci.yml/badge.svg)](https://github.com/ArdaSeyhan34/NewRepo/actions/workflows/ci.yml)
+[![CI](https://github.com/ArdaSeyhan34/clamor/actions/workflows/ci.yml/badge.svg)](https://github.com/ArdaSeyhan34/clamor/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -85,7 +85,7 @@ in [docs/methodology.md](docs/methodology.md).
 ## Quickstart
 
 ```bash
-git clone https://github.com/ArdaSeyhan34/NewRepo.git clamor && cd clamor
+git clone https://github.com/ArdaSeyhan34/clamor.git && cd clamor
 pip install -e ".[all]"          # Python 3.10+
 
 clamor demo                      # analyze the demo data, evaluate it, write reports/demo/

@@ -408,5 +408,5 @@ with tab_eval:
         st.dataframe(ev["per_theme"], hide_index=True)
 
 st.caption(
-    "Clamor · open source · synthetic demo data · [GitHub](https://github.com/ArdaSeyhan34/NewRepo)"
+    "Clamor · open source · synthetic demo data · [GitHub](https://github.com/ArdaSeyhan34/clamor)"
 )

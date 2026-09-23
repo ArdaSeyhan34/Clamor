@@ -38,7 +38,7 @@ all = ["clamor[app,llm,dev]"]
 clamor = "clamor.cli:app"
 
 [project.urls]
-Repository = "https://github.com/ArdaSeyhan34/NewRepo"
+Repository = "https://github.com/ArdaSeyhan34/clamor"
 
 [tool.setuptools.packages.find]
 include = ["clamor*"]
