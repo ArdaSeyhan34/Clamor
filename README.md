@@ -85,6 +85,32 @@ ticket that opens with "Hi team, we've been customers for 2 years" and closes wi
 "Thanks, Maria" otherwise gets grouped by writing style instead of by problem. Details are
 in [docs/methodology.md](docs/methodology.md).
 
+## In Turkish, without revenue data
+
+The second demo, **Lezzo**, is a fictional Turkish employee meal-card app: 2,738 app-store
+reviews, support tickets and survey answers from end users, written the way people type on
+a phone ("odeme gecmiyor", typos, capitals), with phone numbers and e-mail addresses inside
+tickets and **no revenue data**, so the ranking rests on reach, severity and momentum
+([report](reports/demo_lezzo/report.md)). The top five of its roadmap are five separate
+bugs that the new QR payment screen (v5.3) introduced: payments that do not go through, a
+white screen, a camera that does not read the code, payments that never reach the
+restaurant and double charges, each flagged as *emerging* with its own evidence.
+
+| What is measured | Result |
+|---|---|
+| Items that land in a theme about their true topic | **94%** (homogeneity 0.96) |
+| Releases linked to the theme they were meant to change | **5 / 5** |
+| Sentiment sign accuracy | **94%** |
+| Real incidents detected in a day-by-day replay | **2 / 2** |
+| False alarm episodes over six months | **5** vs **88** for the naive rule |
+| Phone numbers and e-mails masked before analysis | **211 / 211** |
+
+What changes for Turkish ([details](docs/methodology.md#12-turkish-and-consumer-apps)):
+Turkish-aware case folding (`I` → `ı`, `İ` → `i`), matching that tolerates missing
+diacritics, a sentiment lexicon matched on word stems for an agglutinative language, and a
+multilingual MiniLM combined with TF-IDF, tuned to split distinct problems rather than
+merge them.
+
 ## Quickstart
 
 ```bash
@@ -92,7 +118,7 @@ git clone https://github.com/ArdaSeyhan34/clamor.git && cd clamor
 pip install -e ".[all]"          # Python 3.10+
 
 clamor demo                      # analyze the demo data, evaluate it, write reports/demo/
-clamor demo --scenario lezzo     # the Turkish consumer-app demo, written to reports/demo_lezzo/
+clamor demo --scenario lezzo     # the Turkish demo (downloads a ~470 MB multilingual model)
 streamlit run app/streamlit_app.py
 ```
 
@@ -237,7 +263,7 @@ clamor/
 app/streamlit_app.py   interactive dashboard
 scripts/ablation.py    ablation study
 scripts/tune.py        threshold grid search per backend and scenario
-tests/                 57 tests, run offline
+tests/                 59 tests, run offline
 docs/                  methodology, a PM case study, a guide for real data
 ```
 
@@ -263,7 +289,9 @@ docs/                  methodology, a PM case study, a guide for real data
 - **Themes are learned on the full history.** Time travel replays the statistics, not the
   clustering, so the backtest is slightly optimistic. An online variant would assign new
   items to existing themes and open new themes when nothing fits.
-- **English only**, although swapping in a multilingual MiniLM is a one-line change.
+- **Two languages.** English and Turkish have language packs (boilerplate, stop words,
+  sentiment lexicon, cue phrases); another language needs a pack of its own in
+  `clamor/lang.py` and a threshold search with `scripts/tune.py`.
 
 ## License
 

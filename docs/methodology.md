@@ -15,6 +15,7 @@ were tried and how they were measured. All numbers come from the demo dataset (s
 - [9. Release radar](#9-release-radar)
 - [10. Evaluation protocol](#10-evaluation-protocol)
 - [11. What did not work](#11-what-did-not-work)
+- [12. Turkish and consumer apps](#12-turkish-and-consumer-apps)
 
 ---
 
@@ -270,3 +271,78 @@ shipped the same week are not controlled for, and the UI says so.
   a few enterprise accounts for every theme, so revenue stopped discriminating.
 - **Normalizing trends by total volume:** false "declining" flags for unrelated themes
   during the sync incident (see section 8).
+
+## 12. Turkish and consumer apps
+
+A second scenario, **Lezzo** (`clamor/synth_lezzo.py`), tests what changes when the
+feedback is Turkish and comes from the end users of a consumer app: a fictional employee
+meal-card app with 2,738 items over six months (app-store reviews, in-app support tickets
+and an in-app survey), 13 topics, five releases and **no revenue data**. The text is
+deliberately informal: missing Turkish characters ("odeme gecmiyor"), lower-cased
+reviews, typos, and phone numbers and e-mail addresses inside support tickets.
+
+**What the Turkish language pack does** (`clamor/lang.py`):
+
+- **Case:** Turkish has a dotted and a dotless i, so `I` lower-cases to `ı` and `İ` to
+  `i`; Python's `str.lower` gets both wrong.
+- **Missing diacritics:** lexicon and cue-phrase matching runs on an ASCII-folded form
+  ("çalışmıyor" and "calismiyor" match the same entry), and every boilerplate prototype
+  also gets an ASCII variant.
+- **Agglutination:** one stem carries many suffixes ("yavaş", "yavaşladı",
+  "yavaşlıyor"), so sentiment lexicon entries match as word prefixes, and negation
+  handles the postposed "değil" ("güzel değil").
+- **Boilerplate:** greetings and sign-offs ("Merhaba", "İyi çalışmalar", "Kolay gelsin")
+  and generic complaints ("Rezalet.") are detected like their English counterparts.
+- **Masking:** phone numbers, e-mails, Luhn-valid card numbers, IBANs and Turkish
+  national ID numbers (checksum-validated, so order numbers survive) are replaced before
+  anything is embedded.
+
+Sentiment sign accuracy on Lezzo is **94%** with a lexicon of about 90 stems.
+
+**Embeddings.** English MiniLM is English-only, so Turkish uses
+[paraphrase-multilingual-MiniLM-L12-v2](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2)
+(ONNX, 384 dimensions). Each backend's thresholds were grid-searched with
+`scripts/tune.py` in the [Benchmark workflow](../.github/workflows/benchmark.yml); the
+best setting of each is shown:
+
+| Backend (distance threshold) | Themes | ARI | Homogeneity | Items recovered | False alarms |
+|---|---:|---:|---:|---:|---:|
+| TF-IDF + LSA (0.90) | 42 | 0.413 | 0.924 | 92% | 2 |
+| Multilingual MiniLM (0.60) | 26 | 0.523 | 0.789 | 74% | 4 |
+| Multilingual MiniLM on lower-cased text (0.55) | 30 | 0.388 | 0.763 | 76% | 11 |
+| Hybrid: multilingual 0.8 + TF-IDF 0.2 (0.65) | 30 | **0.541** | 0.858 | 78% | 6 |
+| **Hybrid: multilingual 0.65 + TF-IDF 0.35 (0.60)** | 51 | 0.356 | **0.960** | **94%** | 5 |
+
+The metrics disagree here, and the choice is deliberate. The ground truth has one label
+per topic, but a topic such as `qr_payment` covers seven different problems: a frozen
+screen, a camera that does not read the code, a double charge, a payment the restaurant
+never receives. ARI rewards merging them; a product team needs them apart, because each
+has a different fix and a different owner. The multilingual model alone scores the higher
+ARI precisely because it merges: a quarter of all items end up in a theme about another
+topic; for example, map-search bugs and requests for more partner restaurants share one
+theme. The default is therefore the
+hybrid that keeps themes pure (96% homogeneity, 94% of items in a theme about their
+topic) and splits instead: 51 themes for 13 topics, several of them distinct QR payment
+bugs. Fragments that really are duplicates are what theme consolidation and the optional
+Claude review merge. TF-IDF is almost as pure on this benchmark, but the synthetic
+templates share more vocabulary than real paraphrases do; it remains the fallback when
+the model cannot be downloaded.
+
+Lower-casing the text before the cased multilingual model, to undo shouting and
+inconsistent capitals, made every metric worse and is not used.
+
+**Release matching with a hybrid.** Release notes are written in product language
+("Uygulamanın açılış süresi kısaltıldı"), not in the customers' words, and the lexical
+half of a hybrid vector latched onto incidental overlap: the performance release was
+linked to a login theme through the shared word "süresi". With a hybrid, releases are
+therefore matched on the semantic half only, which links all five releases correctly.
+
+Without revenue data the revenue weight is set to zero and the ranking uses reach,
+severity and momentum. The planted story is recovered
+([report](../reports/demo_lezzo/report.md)): the v5.3 QR payment screen is flagged
+*Worse*, and the top five of the roadmap are five distinct QR payment bugs, all
+*emerging*; v5.1.1 *Resolves* the login regression that v5.1 introduced; the v5.2
+performance release shows *No detectable change*. Early warnings caught both incidents
+with 5 false alarm episodes in six months, against 88 for the naive "2x the recent
+average" rule, which fires far more often when themes are fine-grained.
+

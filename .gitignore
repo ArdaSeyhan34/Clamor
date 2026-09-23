@@ -16,9 +16,10 @@ venv/
 .coverage
 htmlcov/
 
-# Clamor outputs (the committed demo report lives in reports/demo)
+# Clamor outputs (the committed demo reports live in reports/demo and reports/demo_lezzo)
 reports/*
 !reports/demo/
+!reports/demo_lezzo/
 .clamor_cache/
 
 # OS / editors

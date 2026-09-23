@@ -84,9 +84,9 @@ in the words customers would use. Store release notes are usually good enough.
 
 | `--backend` | When to use it |
 |---|---|
-| `multilingual` (default for `--language tr`) | Best themes for Turkish and mixed Turkish/English text. Downloads ~470 MB once. |
-| `hybrid` | Adds word overlap to the semantic model; helps when product vocabulary matters. |
-| `tfidf` | No download at all, e.g. when the model host is blocked on a company network. Themes are more fragmented. |
+| `hybrid` (default for `--language tr`) | Multilingual MiniLM plus word overlap: the purest Turkish themes in the benchmark, and robust to mixed Turkish/English text. Downloads ~470 MB once. |
+| `multilingual` | The semantic model alone: fewer, broader themes, but it tends to merge distinct problems. |
+| `tfidf` | No download at all, e.g. when the model host is blocked on a company network. Needs shared wording to group items. |
 
 If the model cannot be downloaded, Clamor falls back to `tfidf` and says so.
 
