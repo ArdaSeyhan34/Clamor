@@ -42,13 +42,15 @@ BACKEND_DEFAULTS: dict[str, dict[str, float]] = {
 
 @dataclass(frozen=True)
 class Config:
-    embedding: str = "hybrid"
+    embedding: str = "minilm"
     product_names: tuple[str, ...] = ()
     distance_threshold: float | None = None
     boilerplate_threshold: float | None = None
     min_theme_share: float = 0.005  # themes need >= 0.5% of items (and >= 5 items)
     reassign_similarity: float = 0.5
     consolidate: bool = True  # merge near-duplicate themes (see themes.consolidate)
+    segment_sentences: bool = True  # cluster sentences, not whole tickets (see text.py)
+    volume_normalization: str = "median_of_ratios"  # or "total" (see stats.py)
     score_window_days: int = 60  # reach/revenue/severity reflect current demand, not history
     recent_days: int = 28
     baseline_days: int = 84
@@ -60,7 +62,7 @@ class Config:
 
     def backend_default(self, key: str, backend: str) -> float:
         family = "st" if backend.startswith("st:") else backend
-        return BACKEND_DEFAULTS.get(family, BACKEND_DEFAULTS["hybrid"])[key]
+        return BACKEND_DEFAULTS.get(family, BACKEND_DEFAULTS["minilm"])[key]
 
     def with_weights(self, weights: Weights) -> Config:
         return replace(self, weights=weights)

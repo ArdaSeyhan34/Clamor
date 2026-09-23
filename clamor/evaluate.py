@@ -99,6 +99,27 @@ def evaluate_release_matching(
     return out
 
 
+def evaluate_side_effects(analysis: Analysis, truth: pd.DataFrame, events: pd.DataFrame) -> dict:
+    """Are "suspected side effects" real? True if the theme really spiked after that release."""
+    fx = analysis.side_effects
+    if fx is None or fx.empty:
+        return {"flagged": 0, "real": 0, "spurious": 0}
+    mapping = theme_mapping(analysis, truth)
+    spikes = events[events["kind"] == "spike"].assign(
+        start_date=lambda e: pd.to_datetime(e["start_date"])
+    )
+    real = 0
+    for _, f in fx.iterrows():
+        theme = mapping.get(f["theme_id"])
+        window = spikes[
+            (spikes["theme"] == theme)
+            & (spikes["start_date"] >= f["date"] - pd.Timedelta(days=2))
+            & (spikes["start_date"] <= f["date"] + pd.Timedelta(days=28))
+        ]
+        real += int(len(window) > 0)
+    return {"flagged": len(fx), "real": real, "spurious": len(fx) - real}
+
+
 def _naive_alerts(daily: pd.DataFrame, day: pd.Timestamp) -> set[str]:
     """Dashboard-style rule: last 7 days >= 2x the weekly average of the prior 28 days."""
     last7 = daily.loc[day - pd.Timedelta(days=6) : day].sum()
@@ -142,6 +163,18 @@ def backtest_alerts(
                 return True
         return False
 
+    # any real change in a theme's rate (spike, drop, growth) makes a non-stable status
+    # legitimate for as long as the comparison windows still contain it
+    horizon = pd.Timedelta(days=cfg.recent_days + cfg.baseline_days)
+
+    def is_changing(true_theme: str, day: pd.Timestamp) -> bool:
+        for _, e in events[events["theme"] == true_theme].iterrows():
+            end = pd.to_datetime(e["end_date"]) if pd.notna(e["end_date"]) else None
+            if day >= e["start_date"] and (end is None or day <= end + horizon):
+                return True
+        return False
+
+    spurious_flags = 0
     log = []
     for day in day_index[warmup_days:]:
         trends = detect_trends(
@@ -152,8 +185,15 @@ def backtest_alerts(
             cfg.recent_days,
             cfg.baseline_days,
             cfg.alpha,
+            normalization=cfg.volume_normalization,
         )
         clamor = set(trends.loc[trends["status"].isin(ALERT_STATUSES), "theme_id"])
+        moving = trends.loc[
+            trends["status"].isin({"new", "emerging", "rising", "declining"}), "theme_id"
+        ]
+        spurious_flags += sum(
+            1 for tid in moving if mapping.get(tid) and not is_changing(mapping[tid], day)
+        )
         for method, alerts in (("clamor", clamor), ("naive_2x", _naive_alerts(daily, day))):
             for tid in alerts:
                 true_theme = mapping.get(tid)
@@ -205,6 +245,8 @@ def backtest_alerts(
             "false_alarm_episodes": episodes,
             "false_alarm_days": int(len(false)),
         }
+    # theme-days where Clamor called a theme rising/declining although nothing changed
+    summary["clamor"]["spurious_trend_days"] = spurious_flags
     return detection, summary
 
 
@@ -221,4 +263,5 @@ def evaluate_all(analysis: Analysis, dataset) -> dict:
         ),
         "detection": detection,
         "alerts": alert_summary,
+        "side_effects": evaluate_side_effects(analysis, dataset.ground_truth, dataset.events),
     }

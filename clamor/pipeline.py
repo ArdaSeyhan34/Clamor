@@ -55,7 +55,12 @@ def build_theme_model(
     feedback = feedback.reset_index(drop=True)
     embedder = embedder or get_embedder(config.embedding)
     backend = embedder.name
-    segments = segment_feedback(feedback, config.product_names)
+    if config.segment_sentences:
+        segments = segment_feedback(feedback, config.product_names)
+    else:  # ablation: one "segment" per item, the way most feedback tools work
+        segments = pd.DataFrame(
+            {"doc": range(len(feedback)), "position": 0, "text": feedback["text"].astype(str)}
+        )
     texts = segments["text"].tolist()
     embedder.fit(texts + list(BOILERPLATE_PROTOTYPES))
     vectors = embedder.encode(texts)
@@ -261,7 +266,14 @@ def analyze(
     themes = themes.fillna(fill)
     theme_ids = themes["theme_id"].tolist()
     trends = detect_trends(
-        mentions, dates, theme_ids, as_of, config.recent_days, config.baseline_days, config.alpha
+        mentions,
+        dates,
+        theme_ids,
+        as_of,
+        config.recent_days,
+        config.baseline_days,
+        config.alpha,
+        normalization=config.volume_normalization,
     )
     themes = themes.merge(trends, on="theme_id", how="left")
 
@@ -278,7 +290,13 @@ def analyze(
             rel, vectors, model.themes, model.centroids, config.release_match_similarity
         )
         radar, effects = release_radar(
-            matched, mentions, dates, theme_ids, config.impact_window_days, config.alpha
+            matched,
+            mentions,
+            dates,
+            theme_ids,
+            config.impact_window_days,
+            config.alpha,
+            normalization=config.volume_normalization,
         )
 
     return Analysis(

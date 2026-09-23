@@ -32,10 +32,13 @@ VERDICT_STYLE = {  # verdict -> (status color, icon); icon + label, never color 
 COMPONENTS = ["Reach", "Revenue", "Severity", "Momentum"]
 
 
-def _layout(fig: go.Figure, mode: str, height: int, **kwargs) -> go.Figure:
+def _layout(
+    fig: go.Figure, mode: str, height: int, margin: dict | None = None, **kwargs
+) -> go.Figure:
+    # explicit margins: some embedders (e.g. Streamlit) do not honour plotly's automargin
     fig.update_layout(
         height=height,
-        margin={"l": 10, "r": 20, "t": 30, "b": 10},
+        margin={"l": 60, "r": 20, "t": 40, "b": 50, **(margin or {})},
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font={
@@ -102,7 +105,8 @@ def priority_chart(
     return _layout(
         fig,
         mode,
-        height=90 + 30 * len(road),
+        height=110 + 30 * len(road),
+        margin={"l": 12 + 7 * max(len(label) for label in labels)},
         barmode="stack",
         bargap=0.35,
         legend={"orientation": "h", "yanchor": "bottom", "y": 1.0, "x": 0, "traceorder": "normal"},
@@ -158,7 +162,7 @@ def rank_shift_chart(scored: pd.DataFrame, top_n: int = 10, mode: str = "light")
         side="top",
     )
     fig.update_yaxes(autorange="reversed", range=[n + 0.5, 0.5], showgrid=False, visible=False)
-    return _layout(fig, mode, height=80 + 30 * n)
+    return _layout(fig, mode, height=80 + 30 * n, margin={"l": 10, "r": 10, "t": 50, "b": 10})
 
 
 def timeline_chart(
@@ -187,13 +191,13 @@ def timeline_chart(
             + "<extra>%{fullData.name}</extra>",
         )
     if releases is not None and len(releases):
-        for _, r in releases.iterrows():
+        for i, (_, r) in enumerate(releases.iterrows()):
             fig.add_vline(x=pd.Timestamp(r["date"]), line={"color": MUTED, "width": 1})
             fig.add_annotation(
                 x=pd.Timestamp(r["date"]),
-                y=1,
+                y=1.0 if i % 2 == 0 else 1.07,
                 yref="paper",
-                text=r["version"],
+                text=str(r["version"])[:12],
                 showarrow=False,
                 yanchor="bottom",
                 font={"color": MUTED, "size": 11},
@@ -202,7 +206,13 @@ def timeline_chart(
         title="% of all feedback" if normalize else "mentions per week", rangemode="tozero"
     )
     fig.update_layout(hovermode="x unified")
-    return _layout(fig, mode, height=380, legend={"orientation": "h", "y": -0.18, "x": 0})
+    return _layout(
+        fig,
+        mode,
+        height=400,
+        margin={"t": 60, "b": 40},
+        legend={"orientation": "h", "y": -0.15, "x": 0, "yanchor": "top"},
+    )
 
 
 def release_chart(
@@ -249,4 +259,9 @@ def release_chart(
         ticktext=["0.1x", "0.25x", "0.5x", "1x", "2x", "4x", "10x", "25x"],
     )
     fig.update_yaxes(autorange="reversed", showgrid=False)
-    return _layout(fig, mode, height=110 + 42 * len(data))
+    return _layout(
+        fig,
+        mode,
+        height=130 + 42 * len(data),
+        margin={"l": 12 + 7 * max(len(label) for label in data["label"]), "t": 80},
+    )

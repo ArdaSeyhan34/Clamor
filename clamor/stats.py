@@ -45,11 +45,15 @@ def volume_ratio(
     total_b: int,
     min_count: int = 10,
     min_themes: int = 4,
+    method: str = "median_of_ratios",
 ) -> float:
     """Median-of-ratios estimate of E[a]/E[b] for a theme that did not change.
 
-    Falls back to the ratio of total volumes when too few themes have enough data.
+    Falls back to the ratio of total volumes when too few themes have enough data, or when
+    ``method="total"`` (kept for the ablation study).
     """
+    if method == "total":
+        return total_a / total_b if total_a > 0 and total_b > 0 else float("nan")
     ratios = [
         (counts_a.get(k, 0) + SMOOTH) / (counts_b.get(k, 0) + SMOOTH)
         for k in set(counts_a) | set(counts_b)
@@ -95,3 +99,8 @@ def benjamini_hochberg(p_values: np.ndarray | list[float]) -> np.ndarray:
     out = np.empty(n)
     out[order] = np.clip(q, 0, 1)
     return out
+
+
+def format_q(q: float) -> str:
+    """Human-friendly q/p-value: '< 0.001' instead of '0.000'."""
+    return "< 0.001" if q < 0.001 else f"{q:.3f}"

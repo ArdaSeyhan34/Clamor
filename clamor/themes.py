@@ -265,6 +265,9 @@ def classify_kind(texts: list[str], mean_sentiment: float) -> str:
         return "praise"
     if rates["bug"] >= max(0.3, rates["feature_request"]):
         return "bug"
+    # weaker malfunction cues still mean "bug" when the tone is clearly negative
+    if rates["bug"] >= max(0.2, rates["feature_request"]) and mean_sentiment < -0.2:
+        return "bug"
     if rates["feature_request"] >= 0.3:
         return "feature_request"
     return "ux"

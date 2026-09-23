@@ -13,6 +13,7 @@ import pandas as pd
 
 from . import llm
 from .pipeline import Analysis
+from .stats import format_q
 
 log = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ KIND_LABEL = {
 
 OPTIONS_BY_KIND = {
     "bug": [
-        "Reproduce with the accounts quoted below and add monitoring on the failing path",
+        "Reproduce with the accounts behind these quotes and add monitoring on the failing path",
         "Ship a targeted fix behind a flag and watch this theme's mention rate afterwards",
         "Proactively tell affected accounts what happened and when it will be fixed",
     ],
@@ -134,22 +135,23 @@ def template_brief(ev: dict) -> str:
         trend_line += (
             f": the rate over the last {trend['recent_window_days']} days is "
             f"{trend['recent_vs_baseline_rate_ratio']:.2f}x the baseline "
-            f"(95% CI {lo:.2f}-{hi:.2f}, FDR q = {trend['fdr_q_value']:.3f})."
+            f"(95% CI {lo:.2f}-{hi:.2f}, FDR q {format_q(trend['fdr_q_value'])})."
         )
     kind_key = next((k for k, v in KIND_LABEL.items() if v == ev["type"]), "ux")
     options = OPTIONS_BY_KIND.get(kind_key, OPTIONS_BY_KIND["ux"])
 
     lines = [
-        f"# {ev['name']}",
+        f"## {ev['name']}",
         "",
         f"*{ev['type']} · theme {ev['theme_id']}*",
         "",
-        "## Problem",
+        "### Problem",
         f"Customers report: “{ev['representative_quote']}.”",
         "",
-        "## Who is affected",
+        "### Who is affected",
         f"- **{mentions}** mentions from **{accounts}** accounts in the last {window} days "
-        f"({ev['mentions_all_time']} all time, {ev['share_of_all_feedback']:.1%} of feedback)",
+        f"({ev['mentions_all_time']} all time; {ev['share_of_all_feedback']:.1%} of all feedback "
+        "in that window)",
         f"- Plans: {plans}",
         f"- Channels: {channels}",
     ]
@@ -161,10 +163,10 @@ def template_brief(ev: dict) -> str:
         )
     lines += [
         "",
-        "## Evidence",
-        *[f"> {q}" for q in ev["quotes"][:5]],
+        "### Evidence",
+        *[f"- \u201c{q}\u201d" for q in ev["quotes"][:5]],
         "",
-        "## Why now",
+        "### Why now",
         trend_line,
     ]
     if "priority" in ev:
@@ -181,15 +183,15 @@ def template_brief(ev: dict) -> str:
         )
     lines += [
         "",
-        "## Options to explore",
+        "### Options to explore",
         *[f"1. {o}" for o in options],
         "",
-        "## How we will know it worked",
+        "### How we will know it worked",
         "- This theme's mention rate drops significantly in Clamor's release radar within "
         "4 weeks of shipping",
         "- Sentiment of remaining mentions improves; no new theme spikes after the release",
         "",
-        "## Open questions",
+        "### Open questions",
         "- Which of the quoted accounts can we talk to this week?",
         "- Is there usage data that confirms the size of the problem?",
     ]

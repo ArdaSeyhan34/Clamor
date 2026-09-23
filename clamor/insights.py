@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import pandas as pd
 
 from .pipeline import Analysis
+from .stats import format_q
 
 
 @dataclass(frozen=True)
@@ -66,7 +67,7 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
                 f"Early warning: {_name(r)} is {r['status']}",
                 f"Mention rate is {r['lift']:.1f}x its baseline over the last "
                 f"{analysis.config.recent_days} days (95% CI {r['lift_ci_low']:.1f}-"
-                f"{r['lift_ci_high']:.1f}, q = {r['q_value']:.4f}).",
+                f"{r['lift_ci_high']:.1f}, q {format_q(r['q_value'])}).",
             )
         )
 

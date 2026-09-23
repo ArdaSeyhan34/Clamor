@@ -79,6 +79,7 @@ def release_radar(
     window_days: int = 28,
     alpha: float = 0.05,
     side_effect_lift: float = 1.5,
+    normalization: str = "median_of_ratios",
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Returns (one row per release, one row per suspected side effect)."""
     release_dates = [pd.Timestamp(d).normalize() for d in matched["date"]]
@@ -102,7 +103,7 @@ def release_radar(
             rows.append({**base, "verdict": "Not enough data"})
             continue
 
-        expected = volume_ratio(post.to_dict(), pre.to_dict(), n_post, n_pre)
+        expected = volume_ratio(post.to_dict(), pre.to_dict(), n_post, n_pre, method=normalization)
         tid = rel.get("theme_id")
         if tid:
             cmp = compare_rates(int(post.get(tid, 0)), int(pre.get(tid, 0)), expected)

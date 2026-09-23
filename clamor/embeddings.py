@@ -1,17 +1,17 @@
 """Text embedding backends.
 
-``hybrid`` (default)
-    MiniLM (semantic) and TF-IDF (lexical) vectors concatenated with weights 0.8 / 0.2,
-    the same idea as hybrid search. The semantic part knows that "dark theme" and "night
-    mode" are the same request; the lexical part keeps "recurring event" complaints from
-    being swallowed by the semantically similar "duplicate event" sync bug. On the
-    benchmark it beats both of its parts (see ``clamor evaluate``).
-
-``minilm``
+``minilm`` (default)
     `all-MiniLM-L6-v2 <https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2>`_
     run through ONNX Runtime. Semantic, fast on a laptop CPU (~3k sentences in a few
     seconds) and without the PyTorch dependency. The ~90 MB model is downloaded once to
     ``~/.cache/clamor`` (override with ``CLAMOR_MODEL_DIR``).
+
+``hybrid``
+    MiniLM (semantic) and TF-IDF (lexical) vectors concatenated with weights 0.8 / 0.2,
+    the same idea as hybrid search. It was the default until theme consolidation was
+    added; since then it performs on par with plain MiniLM on the benchmark (see
+    ``clamor evaluate``), so the simpler model is the default. Worth trying on jargon-heavy
+    feedback, where exact vocabulary matters more.
 
 ``tfidf``
     TF-IDF + truncated SVD (LSA). Needs no download; used in CI and as an automatic fallback
@@ -195,7 +195,7 @@ class SentenceTransformerEmbedder:
         return np.asarray(self.model.encode(texts, normalize_embeddings=True))
 
 
-def get_embedder(name: str = "hybrid", fallback: bool = True) -> Embedder:
+def get_embedder(name: str = "minilm", fallback: bool = True) -> Embedder:
     """Build an embedder by name, falling back to TF-IDF if the model is unavailable."""
     try:
         if name == "hybrid":

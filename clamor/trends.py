@@ -36,6 +36,7 @@ def detect_trends(
     baseline_days: int = 84,
     alpha: float = 0.05,
     min_lift: float = 1.5,
+    normalization: str = "median_of_ratios",
 ) -> pd.DataFrame:
     """Classify every theme as new / emerging / rising / stable / declining / quiet.
 
@@ -48,7 +49,9 @@ def detect_trends(
     recent, n_recent = window_counts(mentions, dates, recent_start, end)
     base, n_base = window_counts(mentions, dates, base_start, recent_start)
 
-    expected = volume_ratio(recent.to_dict(), base.to_dict(), n_recent, n_base)
+    expected = volume_ratio(
+        recent.to_dict(), base.to_dict(), n_recent, n_base, method=normalization
+    )
     rows = []
     for tid in theme_ids:
         a, b = int(recent.get(tid, 0)), int(base.get(tid, 0))

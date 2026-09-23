@@ -90,7 +90,7 @@ def analyze_cmd(
     releases: Path | None = typer.Option(None, help="Changelog with date and title."),
     out: Path = typer.Option(Path("reports/latest"), help="Output directory."),
     as_of: str | None = typer.Option(None, help="Analyze as if today were this date."),
-    backend: str = typer.Option("hybrid", help="hybrid | minilm | tfidf | st:<model>"),
+    backend: str = typer.Option("minilm", help="minilm | hybrid | tfidf | st:<model>"),
     preset: str = typer.Option("balanced", help=f"Weight preset: {', '.join(PRESETS)}"),
     product_name: list[str] = typer.Option([], help="Product name(s) to ignore in text."),
     briefs: int = typer.Option(3, help="Opportunity briefs to write for the top themes."),
@@ -119,7 +119,7 @@ def analyze_cmd(
 def demo(
     out: Path = typer.Option(Path("reports/demo"), help="Output directory for the report."),
     data: Path = typer.Option(DEMO_DATA, help="Where the demo CSVs live (generated if missing)."),
-    backend: str = typer.Option("hybrid", help="hybrid | minilm | tfidf"),
+    backend: str = typer.Option("minilm", help="minilm | hybrid | tfidf"),
     use_llm: bool | None = typer.Option(None, "--llm/--no-llm"),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ) -> None:

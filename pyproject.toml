@@ -24,12 +24,14 @@ dependencies = [
     "typer>=0.9",
     "jinja2>=3.1",
     "plotly>=5.18",
+    "onnxruntime>=1.17",
+    "tokenizers>=0.15",
 ]
 
 [project.optional-dependencies]
-app = ["streamlit>=1.32"]
+app = ["streamlit>=1.45"]
 llm = ["anthropic>=1.0"]
-dev = ["pytest>=7.4", "ruff>=0.5", "matplotlib>=3.8"]
+dev = ["pytest>=7.4", "ruff>=0.5"]
 all = ["clamor[app,llm,dev]"]
 
 [project.scripts]
