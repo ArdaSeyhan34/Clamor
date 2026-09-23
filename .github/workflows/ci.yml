@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: pip install -e ".[dev,llm]"
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Test
+        # tests use the TF-IDF backend and a fake Claude client: no downloads, no API key
+        run: pytest
+
+  demo:
+    # end-to-end run with the real MiniLM model, checks the published accuracy still holds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/clamor
+          key: minilm-onnx-v1
+      - run: pip install -e .
+      - run: clamor demo --no-llm --out /tmp/demo | tee demo.log
+      - name: Accuracy guard
+        run: |
+          python - <<'PY'
+          import re
+          log = open("demo.log").read()
+          ari = float(re.search(r"ARI ([0-9.]+)", log).group(1))
+          assert ari > 0.7, f"theme discovery regressed: ARI {ari}"
+          print("ARI", ari)
+          PY
