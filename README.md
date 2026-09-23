@@ -197,6 +197,8 @@ customer quote, and briefs come from a deterministic template
 ([example](reports/demo/briefs/02-T11.md)). Any API failure falls back the same way, and
 the tests use a fake client, so CI never needs a key.
 
+![Theme explorer with an opportunity brief](docs/images/theme-explorer.png)
+
 ## Project structure
 
 ```
