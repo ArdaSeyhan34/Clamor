@@ -53,6 +53,10 @@ class Analysis:
         return "accounts" if self.has_revenue else "users"
 
 
+def _unit(vectors: np.ndarray) -> np.ndarray:
+    return vectors / np.clip(np.linalg.norm(vectors, axis=1, keepdims=True), 1e-12, None)
+
+
 def build_theme_model(
     feedback: pd.DataFrame,
     config: Config = Config(),
@@ -307,9 +311,13 @@ def analyze(
     if rel is not None and len(rel):
         rel = rel[rel["date"] <= as_of]
         texts = (rel["title"] + ". " + rel["description"]).tolist()
-        vectors = model.embedder.encode(texts)
+        vectors, centroids = model.embedder.encode(texts), model.centroids
+        semantic = getattr(model.embedder, "semantic_part", None)
+        if semantic is not None:  # hybrid: release notes are written in product language,
+            # not the customers' words, so match on meaning and ignore incidental word overlap
+            vectors, centroids = _unit(semantic(vectors)), _unit(semantic(centroids))
         matched = match_releases(
-            rel, vectors, model.themes, model.centroids, config.release_match_similarity
+            rel, vectors, model.themes, centroids, config.release_match_similarity
         )
         radar, effects = release_radar(
             matched,

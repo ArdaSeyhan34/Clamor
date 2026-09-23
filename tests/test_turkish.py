@@ -149,3 +149,17 @@ def test_turkish_defaults_to_tuned_hybrid():
     assert tr.backend_default("distance_threshold", "hybrid") == 0.60
     assert en.backend_default("distance_threshold", "hybrid") == 0.70  # English unchanged
     assert tr.backend_default("distance_threshold", "tfidf") == 0.90  # fallback backend
+
+
+def test_hybrid_matches_releases_on_the_semantic_part():
+    from clamor.embeddings import HybridEmbedder, TfidfEmbedder
+
+    data = synth.generate_scenario("lezzo", days=100)
+    hybrid = HybridEmbedder(
+        TfidfEmbedder(n_components=64, lang=TURKISH), TfidfEmbedder(lang=TURKISH), 0.65
+    )
+    cfg = Config(language="tr", product_names=("Lezzo",), distance_threshold=0.9)
+    result = analyze(data.feedback, None, data.releases, config=cfg, embedder=hybrid)
+    linked = result.releases["theme_id"].dropna()
+    assert len(linked) >= 3 and linked.isin(result.themes["theme_id"]).all()
+    assert result.releases["match_similarity"].between(-1.001, 1.001).all()
