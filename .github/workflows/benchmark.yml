@@ -1,0 +1,36 @@
+name: Benchmark
+
+# Measures theme discovery and alerting against the ground truth of a demo scenario and
+# grid-searches the clustering thresholds. Run it from the Actions tab.
+on:
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: "Demo scenario (tempo or lezzo)"
+        default: "lezzo"
+  push:
+    branches: ["claude/**"]
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    env:
+      SCENARIO: ${{ inputs.scenario || 'lezzo' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/clamor
+          key: onnx-models-v2
+      - run: pip install -e .
+      - name: Grid search
+        run: python scripts/tune.py --scenario "$SCENARIO" | tee -a "$GITHUB_STEP_SUMMARY"
+      - name: Demo report
+        run: |
+          clamor demo --scenario "$SCENARIO" --no-llm --out /tmp/report
+          cat /tmp/report/report.md >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/report/report.md

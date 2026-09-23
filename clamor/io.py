@@ -1,7 +1,15 @@
 """Loading and validating input tables.
 
-Only ``feedback`` is required. The schema is deliberately forgiving: common column names
-from support tools and survey exports are mapped automatically.
+Only ``feedback`` is required. The schema is deliberately forgiving so that raw exports
+can be used as they are:
+
+* column names from support tools, survey tools, the Google Play Console and Turkish
+  exports are mapped automatically (``Review Text``, ``Description``, ``Yorum``,
+  ``Tarih``, ``Puan``, ...);
+* a subject or review title is prepended to the body;
+* CSV encoding (UTF-8, UTF-16 as used by Play Console exports, Windows-1254) and
+  delimiter (``,`` or ``;`` as used by Excel in Turkish locales) are detected;
+* day-first dates (``12.03.2026``) are recognized.
 
 feedback  : text (required), created_at (required), feedback_id, account_id, channel, rating
 accounts  : account_id (required), mrr (required), plan, seats, company, ...
@@ -10,29 +18,56 @@ releases  : date (required), title (required), version, description
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pandas as pd
 
 ALIASES = {
-    "text": ["text", "body", "comment", "message", "review", "content", "feedback", "verbatim"],
-    "created_at": ["created_at", "date", "timestamp", "created", "submitted_at", "time"],
-    "feedback_id": ["feedback_id", "id", "ticket_id", "review_id", "response_id"],
-    "account_id": ["account_id", "customer_id", "company_id", "org_id", "user_id"],
-    "channel": ["channel", "source", "origin"],
-    "rating": ["rating", "score", "stars", "nps"],
-    "mrr": ["mrr", "monthly_revenue", "revenue"],
-    "date": ["date", "released_at", "release_date", "shipped_at"],
-    "title": ["title", "name", "summary"],
-}
+    "text": [
+        "text", "review text", "body", "comment", "message", "description", "review",
+        "content", "feedback", "verbatim", "yorum", "metin", "mesaj", "açıklama", "aciklama",
+        "şikayet", "sikayet", "şikayet metni", "talep açıklaması", "yorum metni",
+    ],
+    "created_at": [
+        "created_at", "review submit date and time", "review last update date and time",
+        "created", "created at", "created date", "creation date", "date", "timestamp",
+        "submitted_at", "time", "tarih", "oluşturma tarihi", "olusturma tarihi",
+        "kayıt tarihi", "kayit tarihi", "yorum tarihi",
+    ],
+    "feedback_id": [
+        "feedback_id", "id", "ticket_id", "ticket id", "review_id", "response_id",
+        "talep no", "talep numarası", "kayıt no", "kayit no",
+    ],
+    "account_id": [
+        "account_id", "customer_id", "customer id", "company_id", "org_id", "user_id",
+        "user id", "kullanıcı id", "kullanici_id", "müşteri no", "musteri no",
+    ],
+    "channel": ["channel", "source", "origin", "kanal", "kaynak"],
+    "rating": [
+        "rating", "star rating", "score", "stars", "nps", "puan", "yıldız", "yildiz",
+        "memnuniyet puanı",
+    ],
+    "mrr": ["mrr", "monthly_revenue", "revenue", "gelir", "aylık gelir"],
+    "date": ["date", "released_at", "release_date", "shipped_at", "tarih", "yayın tarihi"],
+    "title": ["title", "name", "summary", "başlık", "baslik", "sürüm adı"],
+    "description": ["description", "notes", "release notes", "açıklama", "aciklama",
+                    "sürüm notları"],
+}  # fmt: skip
+SUBJECT_ALIASES = ["subject", "review title", "konu", "başlık", "baslik"]
+FEEDBACK_FIELDS = ["text", "created_at", "feedback_id", "account_id", "channel", "rating"]
 
 
 class SchemaError(ValueError):
     pass
 
 
+def _key(name: str) -> str:
+    return str(name).replace("İ", "i").replace("I", "i").lower().strip()
+
+
 def _rename(df: pd.DataFrame, wanted: list[str]) -> pd.DataFrame:
-    lower = {c.lower().strip(): c for c in df.columns}
+    lower = {_key(c): c for c in df.columns}
     mapping = {}
     for canonical in wanted:
         if canonical in df.columns:
@@ -44,6 +79,26 @@ def _rename(df: pd.DataFrame, wanted: list[str]) -> pd.DataFrame:
     return df.rename(columns=mapping)
 
 
+def _read_csv(path: Path) -> pd.DataFrame:
+    head = path.read_bytes()[:4]
+    if head.startswith((b"\xff\xfe", b"\xfe\xff")):
+        encodings = ["utf-16"]  # Google Play Console review exports
+    elif head.startswith(b"\xef\xbb\xbf"):
+        encodings = ["utf-8-sig"]
+    else:
+        encodings = ["utf-8", "cp1254", "latin-1"]  # cp1254: Turkish Windows / Excel
+    last_error: Exception | None = None
+    for encoding in encodings:
+        try:
+            with open(path, encoding=encoding) as fh:
+                header = fh.readline()
+            sep = max([",", ";", "\t", "|"], key=header.count)
+            return pd.read_csv(path, sep=sep, encoding=encoding)
+        except UnicodeError as exc:
+            last_error = exc
+    raise SchemaError(f"could not decode {path.name}: {last_error}")
+
+
 def _read(source: str | Path | pd.DataFrame) -> pd.DataFrame:
     if isinstance(source, pd.DataFrame):
         return source.copy()
@@ -52,18 +107,38 @@ def _read(source: str | Path | pd.DataFrame) -> pd.DataFrame:
         return pd.read_excel(path)
     if path.suffix.lower() in {".json", ".jsonl"}:
         return pd.read_json(path, lines=path.suffix.lower() == ".jsonl")
-    return pd.read_csv(path)
+    return _read_csv(path)
+
+
+_DAY_FIRST = re.compile(r"^\s*\d{1,2}[./]\d{1,2}[./]\d{2,4}")
+
+
+def _parse_dates(values: pd.Series) -> pd.Series:
+    """Parse timestamps; '12.03.2026' is read as 12 March, as in Turkish exports."""
+    sample = values.dropna().astype(str).head(200)
+    day_first = len(sample) > 0 and sample.str.match(_DAY_FIRST).mean() > 0.5
+    parsed = pd.to_datetime(values, errors="coerce", utc=True, dayfirst=bool(day_first))
+    return parsed.dt.tz_localize(None)
 
 
 def load_feedback(source: str | Path | pd.DataFrame) -> pd.DataFrame:
-    df = _rename(_read(source), list(ALIASES)[:6])
+    raw = _read(source)
+    df = _rename(raw, FEEDBACK_FIELDS)
     missing = {"text", "created_at"} - set(df.columns)
     if missing:
         raise SchemaError(
             f"feedback is missing required column(s) {sorted(missing)}; found {list(df.columns)}"
         )
-    df["created_at"] = pd.to_datetime(df["created_at"], errors="coerce", utc=True)
-    df["created_at"] = df["created_at"].dt.tz_localize(None)
+    subject = next((c for c in df.columns if _key(c) in SUBJECT_ALIASES), None)
+    if subject is not None and subject != "text":
+        title = df[subject].fillna("").astype(str).str.strip()
+        body = df["text"].fillna("").astype(str).str.strip()
+        joined = [
+            b if not t or b.lower().startswith(t.lower()) else (f"{t}. {b}" if b else t)
+            for t, b in zip(title, body, strict=True)
+        ]
+        df["text"] = pd.Series(joined, index=df.index).replace("", None)
+    df["created_at"] = _parse_dates(df["created_at"])
     bad = df["created_at"].isna() | df["text"].isna()
     df = df.loc[~bad].copy()
     df["text"] = df["text"].astype(str)
@@ -100,11 +175,11 @@ def load_accounts(source: str | Path | pd.DataFrame | None) -> pd.DataFrame | No
 def load_releases(source: str | Path | pd.DataFrame | None) -> pd.DataFrame | None:
     if source is None:
         return None
-    df = _rename(_read(source), ["date", "title"])
+    df = _rename(_read(source), ["date", "title", "description"])
     missing = {"date", "title"} - set(df.columns)
     if missing:
         raise SchemaError(f"releases is missing required column(s) {sorted(missing)}")
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    df["date"] = _parse_dates(df["date"])
     if "description" not in df:
         df["description"] = ""
     if "version" not in df:

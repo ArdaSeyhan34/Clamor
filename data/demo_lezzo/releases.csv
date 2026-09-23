@@ -1,0 +1,6 @@
+date,version,title,description
+2026-02-04,v5.0,Restoran ağı genişlemesi,Anlaşmalı restoran ağına 1.500 yeni restoran ve kafe eklendi; kartınızı artık çok daha fazla noktada kullanabilirsiniz.
+2026-03-06,v5.1,Yeni giriş deneyimi,SMS doğrulamalı yeni giriş ekranı ve daha güvenli oturum yönetimi.
+2026-04-03,v5.1.1,Giriş düzeltmesi,SMS doğrulama kodlarının gecikmesi ve oturum süresi hataları giderildi.
+2026-05-05,v5.2,Performans iyileştirmeleri,"Uygulamanın açılış süresi kısaltıldı, donma ve yavaşlık sorunları giderildi."
+2026-06-12,v5.3,Yeni QR ödeme ekranı,"QR ile ödeme ekranı yeniden tasarlandı, kasada ödeme artık daha hızlı."

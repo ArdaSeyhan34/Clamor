@@ -23,68 +23,26 @@ import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, KMeans
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
+from .lang import ENGLISH, LanguagePack
+
 OTHER = -1
 
-KIND_CUES: dict[str, tuple[str, ...]] = {
-    "bug": (
-        r"\bcrash",
-        r"\bbroken\b",
-        r"\berror",
-        r"\bfail",
-        r"\bbug",
-        r"\bfreez",
-        r"\bhang",
-        r"\bstuck\b",
-        r"\bdisappear",
-        r"\bduplicate",
-        r"\bnot working\b",
-        r"\bwrong\b",
-        r"\bslow\b",
-        r"\blag",
-        r"\bstopped\b",
-        r"\bunreliable\b",
-        r"\bnever (make|sync|load)",
-        r"\btwice\b",
-        r"\bdrains?\b",
-        r"\bunusable\b",
-        r"\bforever\b",
-        r"\bsync\w* (fail|problem)",
-        r"\bis broken\b",
-        r"\bno longer\b",
-    ),
-    "feature_request": (
-        r"\bplease add\b",
-        r"\badd an?\b",
-        r"\bwould love\b",
-        r"\bwish\b",
-        r"\bneed\b",
-        r"\bsupport for\b",
-        r"\bwould be (great|amazing|nice)\b",
-        r"\bintegration\b",
-        r"\bfeature\b",
-        r"\boption\b",
-        r"\blet me\b",
-        r"\bcan (you|we)\b",
-        r"\bany plans\b",
-        r"\broadmap\b",
-        r"\brequire",
-        r"\bexport\b",
-        r"\bplease\b",
-    ),
-    "pricing": (
-        r"\bprice",
-        r"\bpricing\b",
-        r"\bexpensive\b",
-        r"\bcost",
-        r"\bpay",
-        r"\bper[- ]seat\b",
-        r"\bbilling\b",
-        r"\bbilled\b",
-        r"\bcheaper\b",
-        r"\bpricey\b",
-        r"\bplan costs?\b",
-    ),
-}
+
+def _vectorizer_options(lang: LanguagePack, keywords: bool = False) -> dict:
+    """CountVectorizer settings per language (English keeps its original settings)."""
+    if lang.code == "en":
+        opts: dict = {"stop_words": "english"}
+        if keywords:
+            opts["token_pattern"] = r"(?u)\b[a-zA-Z][a-zA-Z\-]+\b"
+        return opts
+    return {
+        "stop_words": sorted(lang.stop_words),
+        "preprocessor": lang.lower,  # Turkish-aware lower-casing (İ -> i, I -> ı)
+        "token_pattern": r"(?u)\b[^\W\d_][^\W\d_\-]+\b",
+    }
+
+
+KIND_CUES = ENGLISH.kind_cues  # backwards-compatible alias
 
 
 @dataclass
@@ -100,6 +58,7 @@ class ThemeModel:
     vectors: np.ndarray | None = None  # one vector per segment
     embedder: object | None = None  # kept to embed release notes in the same space
     doc_sentiment: np.ndarray | None = None
+    language: str = "en"
 
 
 def cluster_vectors(
@@ -169,6 +128,7 @@ def consolidate(
     semantic_vectors: np.ndarray,
     min_semantic: float = 0.45,
     min_lexical: float = 0.18,
+    lang: LanguagePack = ENGLISH,
 ) -> np.ndarray:
     """Merge clusters that are near-duplicates in *both* meaning and vocabulary.
 
@@ -186,7 +146,7 @@ def consolidate(
     semantic = cents @ cents.T
     docs = [" ".join(t for t, lab in zip(texts, labels, strict=True) if lab == c) for c in ids]
     lex = TfidfTransformer(sublinear_tf=True).fit_transform(
-        CountVectorizer(stop_words="english").fit_transform(docs)
+        CountVectorizer(**_vectorizer_options(lang)).fit_transform(docs)
     )
     lexical = (lex @ lex.T).toarray()
 
@@ -216,18 +176,15 @@ def consolidate(
     return np.array([mapping.get(x, OTHER) for x in merged])
 
 
-def keywords_by_cluster(texts: list[str], labels: np.ndarray, top_n: int = 6) -> dict[int, list]:
+def keywords_by_cluster(
+    texts: list[str], labels: np.ndarray, top_n: int = 6, lang: LanguagePack = ENGLISH
+) -> dict[int, list]:
     """Class-based TF-IDF (c-TF-IDF): which n-grams are distinctive for each cluster."""
     clusters = sorted(set(labels) - {OTHER})
     if not clusters:
         return {}
     docs = [" ".join(t for t, lab in zip(texts, labels, strict=True) if lab == c) for c in clusters]
-    vec = CountVectorizer(
-        ngram_range=(1, 2),
-        stop_words="english",
-        min_df=1,
-        token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z\-]+\b",
-    )
+    vec = CountVectorizer(ngram_range=(1, 2), min_df=1, **_vectorizer_options(lang, True))
     counts = vec.fit_transform(docs)
     weights = TfidfTransformer(sublinear_tf=True).fit_transform(counts).toarray()
     vocab = np.array(vec.get_feature_names_out())
@@ -250,14 +207,14 @@ def keywords_by_cluster(texts: list[str], labels: np.ndarray, top_n: int = 6) ->
     return result
 
 
-def classify_kind(texts: list[str], mean_sentiment: float) -> str:
+def classify_kind(texts: list[str], mean_sentiment: float, lang: LanguagePack = ENGLISH) -> str:
     """Heuristic theme type from cue phrases; the LLM layer can override it."""
     if not texts:
         return "other"
-    joined = [t.lower() for t in texts]
+    joined = [lang.normalize(t) for t in texts]
     rates = {
         kind: np.mean([any(re.search(p, t) for p in pats) for t in joined])
-        for kind, pats in KIND_CUES.items()
+        for kind, pats in lang.kind_cues.items()
     }
     if rates["pricing"] >= 0.35:
         return "pricing"
@@ -287,11 +244,33 @@ def offline_name(headline: str, max_len: int = 60) -> str:
     return cut + "…"
 
 
-def _headline(texts: list[str], vectors: np.ndarray, centroid: np.ndarray) -> str:
-    """The most central short segment: a readable, real-user description of the theme."""
+def _headline(
+    texts: list[str], vectors: np.ndarray, centroid: np.ndarray, lang: LanguagePack = ENGLISH
+) -> str:
+    """A readable, real-user description of the theme.
+
+    Among the most central segments, prefer short ones and the wording customers use most
+    often: a sentence that appears many times is unlikely to contain a one-off typo. For
+    languages with diacritics, spellings with and without them count as one wording, and
+    the properly written variant ("Canlı destek") wins over "canli destek".
+    """
     sims = vectors @ centroid
     top = np.argsort(-sims)[:8]
-    best = min(top, key=lambda i: (len(texts[i]) > 90, -sims[i]))
+    key = str.lower if lang.code == "en" else lang.normalize
+    counts = pd.Series([key(t) for t in texts]).value_counts()
+
+    def quality(t: str) -> tuple:
+        if lang.code == "en":
+            return ()
+        return (-sum(not c.isascii() for c in t), -sum(c.isupper() for c in t))
+
+    best = min(
+        top,
+        key=lambda i: (len(texts[i]) > 90, -counts[key(texts[i])], *quality(texts[i]), -sims[i]),
+    )
+    if lang.code != "en":  # the best-spelled variant of that wording anywhere in the theme
+        same = [t for t in texts if key(t) == key(texts[best])]
+        return min(same, key=quality).rstrip(".")
     return texts[best].rstrip(".")
 
 
@@ -301,9 +280,10 @@ def describe_themes(
     labels: np.ndarray,
     doc_sentiment: np.ndarray,
     n_examples: int = 8,
+    lang: LanguagePack = ENGLISH,
 ) -> tuple[pd.DataFrame, np.ndarray]:
     texts = segments["text"].tolist()
-    keywords = keywords_by_cluster(texts, labels)
+    keywords = keywords_by_cluster(texts, labels, lang=lang)
     rows, centroids = [], []
     for c in sorted(keywords):
         member = np.flatnonzero(labels == c)
@@ -316,7 +296,7 @@ def describe_themes(
         order = member[np.argsort(-sims)]
         seen, examples = set(), []
         for i in order:  # distinct, representative quotes
-            key = texts[i].lower()
+            key = lang.normalize(texts[i])
             if key not in seen:
                 seen.add(key)
                 examples.append(texts[i])
@@ -324,7 +304,7 @@ def describe_themes(
                 break
         mean_sent = float(np.mean(doc_sentiment[np.unique(docs)]))
         kw = keywords[c]
-        headline = _headline(member_texts, vectors[member], centroid)
+        headline = _headline(member_texts, vectors[member], centroid, lang)
         rows.append(
             {
                 "theme_id": f"T{c + 1:02d}",
@@ -334,7 +314,7 @@ def describe_themes(
                 "label": " · ".join(kw[:3]),
                 "keywords": kw,
                 "headline": headline,
-                "kind": classify_kind(member_texts, mean_sent),
+                "kind": classify_kind(member_texts, mean_sent, lang),
                 "examples": examples,
                 "cohesion": float(np.mean(sims)),
             }

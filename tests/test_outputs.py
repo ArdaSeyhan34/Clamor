@@ -33,9 +33,7 @@ def test_insights_and_html_render(analysis):
 
 
 def test_cli_generate(tmp_path):
-    result = CliRunner().invoke(
-        app, ["generate", "--out", str(tmp_path), "--accounts", "40", "--days", "10"]
-    )
+    result = CliRunner().invoke(app, ["generate", "--out", str(tmp_path), "--days", "10"])
     assert result.exit_code == 0, result.output
     assert (tmp_path / "feedback.csv").exists()
 

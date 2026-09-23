@@ -35,6 +35,7 @@ PRESETS: dict[str, Weights] = {
 BACKEND_DEFAULTS: dict[str, dict[str, float]] = {
     "hybrid": {"distance_threshold": 0.70, "boilerplate_threshold": 0.55},
     "minilm": {"distance_threshold": 0.65, "boilerplate_threshold": 0.60},
+    "multilingual": {"distance_threshold": 0.60, "boilerplate_threshold": 0.60},
     "tfidf": {"distance_threshold": 0.90, "boilerplate_threshold": 0.50},
     "st": {"distance_threshold": 0.65, "boilerplate_threshold": 0.60},
 }
@@ -42,7 +43,9 @@ BACKEND_DEFAULTS: dict[str, dict[str, float]] = {
 
 @dataclass(frozen=True)
 class Config:
-    embedding: str = "minilm"
+    language: str = "en"  # "en" or "tr" (see clamor.lang)
+    embedding: str | None = None  # None: the language's default (minilm / multilingual)
+    redact_pii: bool = True  # mask e-mails, phones, cards, IBANs, national IDs on load
     product_names: tuple[str, ...] = ()
     distance_threshold: float | None = None
     boilerplate_threshold: float | None = None
@@ -59,6 +62,14 @@ class Config:
     release_match_similarity: float = 0.35
     weights: Weights = field(default_factory=Weights)
     random_state: int = 0
+
+    @property
+    def backend(self) -> str:
+        if self.embedding:
+            return self.embedding
+        from .lang import get_language
+
+        return get_language(self.language).default_embedding
 
     def backend_default(self, key: str, backend: str) -> float:
         family = "st" if backend.startswith("st:") else backend

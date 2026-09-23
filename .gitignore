@@ -25,3 +25,7 @@ reports/*
 .DS_Store
 .idea/
 .vscode/
+
+# Real (private) data never goes to git: put exports here
+data/private/
+*.private.csv

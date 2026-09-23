@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import logging
 import time
-from dataclasses import replace
 from pathlib import Path
 
 import pandas as pd
@@ -22,7 +21,6 @@ app = typer.Typer(
     no_args_is_help=True,
     help="Clamor: turn customer feedback into a prioritized, evidence-backed roadmap.",
 )
-DEMO_DATA = Path("data/demo")
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -67,19 +65,42 @@ def _maybe_review(analysis: Analysis, use_llm: bool | None) -> Analysis:
         return analysis
 
 
+SCENARIO_SETTINGS = {
+    "tempo": {"data": Path("data/demo"), "out": Path("reports/demo"), "language": "en",
+              "products": ("Tempo",), "backends": ["tfidf", "minilm", "hybrid"]},
+    "lezzo": {"data": Path("data/demo_lezzo"), "out": Path("reports/demo_lezzo"),
+              "language": "tr", "products": ("Lezzo",),
+              "backends": ["tfidf", "multilingual", "hybrid"]},
+}  # fmt: skip
+
+
+def _scenario(name: str) -> dict:
+    if name not in SCENARIO_SETTINGS:
+        raise typer.BadParameter(f"unknown scenario {name!r}; choose {sorted(SCENARIO_SETTINGS)}")
+    return SCENARIO_SETTINGS[name]
+
+
+def _load_dataset(name: str, data: Path | None) -> synth.SyntheticDataset:
+    data = data or _scenario(name)["data"]
+    if not (data / "feedback.csv").exists():
+        synth.generate_scenario(name).save(data)
+    return synth.SyntheticDataset.load(data)
+
+
 @app.command()
 def generate(
-    out: Path = typer.Option(DEMO_DATA, help="Directory for the generated CSV files."),
-    seed: int = typer.Option(7, help="Random seed (same seed, same data)."),
-    accounts: int = typer.Option(600, help="Number of customer accounts."),
+    scenario: str = typer.Option("tempo", help=f"Demo scenario: {', '.join(synth.SCENARIOS)}"),
+    out: Path | None = typer.Option(None, help="Directory for the generated CSV files."),
+    seed: int | None = typer.Option(None, help="Random seed (same seed, same data)."),
     days: int = typer.Option(synth.DEFAULT_DAYS, help="Days of history to simulate."),
 ) -> None:
-    """Generate the synthetic 'Tempo' dataset with ground truth."""
-    data = synth.generate(seed=seed, n_accounts=accounts, days=days)
+    """Generate a synthetic demo dataset with ground truth."""
+    kwargs = {"days": days} | ({"seed": seed} if seed is not None else {})
+    data = synth.generate_scenario(scenario, **kwargs)
+    out = out or _scenario(scenario)["data"]
     data.save(out)
     typer.echo(
-        f"Wrote {len(data.feedback):,} feedback items, {len(data.accounts)} accounts and "
-        f"{len(data.releases)} releases to {out}/"
+        f"Wrote {len(data.feedback):,} feedback items and {len(data.releases)} releases to {out}/"
     )
 
 
@@ -89,11 +110,17 @@ def analyze_cmd(
     accounts: Path | None = typer.Option(None, help="Accounts with account_id and mrr."),
     releases: Path | None = typer.Option(None, help="Changelog with date and title."),
     out: Path = typer.Option(Path("reports/latest"), help="Output directory."),
+    language: str = typer.Option("en", help="Language of the feedback: en | tr"),
     as_of: str | None = typer.Option(None, help="Analyze as if today were this date."),
-    backend: str = typer.Option("minilm", help="minilm | hybrid | tfidf | st:<model>"),
+    backend: str | None = typer.Option(
+        None, help="minilm | multilingual | hybrid | tfidf | st:<model> (default: per language)"
+    ),
     preset: str = typer.Option("balanced", help=f"Weight preset: {', '.join(PRESETS)}"),
     product_name: list[str] = typer.Option([], help="Product name(s) to ignore in text."),
     briefs: int = typer.Option(3, help="Opportunity briefs to write for the top themes."),
+    redact: bool = typer.Option(
+        True, "--redact/--no-redact", help="Mask e-mails, phones, cards, IBANs, national IDs."
+    ),
     use_llm: bool | None = typer.Option(
         None, "--llm/--no-llm", help="Use Claude (default: if ANTHROPIC_API_KEY is set)."
     ),
@@ -103,7 +130,13 @@ def analyze_cmd(
     _setup_logging(verbose)
     if preset not in PRESETS:
         raise typer.BadParameter(f"unknown preset {preset!r}")
-    config = Config(embedding=backend, product_names=tuple(product_name), weights=PRESETS[preset])
+    config = Config(
+        language=language,
+        embedding=backend,
+        product_names=tuple(product_name),
+        weights=PRESETS[preset],
+        redact_pii=redact,
+    )
     start = time.time()
     result = analyze(feedback, accounts, releases, config=config, as_of=as_of)
     result = _maybe_review(result, use_llm)
@@ -117,26 +150,28 @@ def analyze_cmd(
 
 @app.command()
 def demo(
-    out: Path = typer.Option(Path("reports/demo"), help="Output directory for the report."),
-    data: Path = typer.Option(DEMO_DATA, help="Where the demo CSVs live (generated if missing)."),
-    backend: str = typer.Option("minilm", help="minilm | hybrid | tfidf"),
+    scenario: str = typer.Option("tempo", help=f"Demo scenario: {', '.join(synth.SCENARIOS)}"),
+    out: Path | None = typer.Option(None, help="Output directory for the report."),
+    data: Path | None = typer.Option(None, help="Where the demo CSVs live (generated if missing)."),
+    backend: str | None = typer.Option(None, help="Embedding backend (default: per language)"),
     use_llm: bool | None = typer.Option(None, "--llm/--no-llm"),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ) -> None:
-    """Run the full pipeline on the synthetic dataset, evaluate it and write a report."""
+    """Run the full pipeline on a synthetic dataset, evaluate it and write a report."""
     from .evaluate import evaluate_all
 
     _setup_logging(verbose)
-    if not (data / "feedback.csv").exists():
-        synth.generate().save(data)
-    dataset = synth.SyntheticDataset.load(data)
-    config = Config(embedding=backend, product_names=("Tempo",))
+    settings = _scenario(scenario)
+    dataset = _load_dataset(scenario, data)
+    config = Config(
+        language=settings["language"], embedding=backend, product_names=settings["products"]
+    )
     start = time.time()
     result = analyze(dataset.feedback, dataset.accounts, dataset.releases, config=config)
     result = _maybe_review(result, use_llm)
     _print_summary(result, time.time() - start)
     evaluation = evaluate_all(result, dataset)
-    paths = write_report(result, out, evaluation=evaluation, use_llm=use_llm)
+    paths = write_report(result, out or settings["out"], evaluation=evaluation, use_llm=use_llm)
     t, a = evaluation["themes"], evaluation["alerts"]
     typer.echo(
         f"\nAccuracy vs ground truth: ARI {t['adjusted_rand']:.3f}, NMI {t['nmi']:.3f}, "
@@ -150,21 +185,23 @@ def demo(
 
 @app.command()
 def evaluate(
-    data: Path = typer.Option(DEMO_DATA, help="Synthetic dataset directory."),
+    scenario: str = typer.Option("tempo", help=f"Demo scenario: {', '.join(synth.SCENARIOS)}"),
+    data: Path | None = typer.Option(None, help="Synthetic dataset directory."),
     backends: list[str] = typer.Option(
-        ["tfidf", "minilm", "hybrid"], "--backend", help="Backends to compare (repeatable)."
+        [], "--backend", help="Backends to compare (repeatable; default: all for the language)."
     ),
     output: Path | None = typer.Option(None, "--json", help="Also write results as JSON."),
 ) -> None:
     """Benchmark embedding backends against the ground truth."""
     from .evaluate import evaluate_all
 
-    if not (data / "feedback.csv").exists():
-        synth.generate().save(data)
-    dataset = synth.SyntheticDataset.load(data)
+    settings = _scenario(scenario)
+    dataset = _load_dataset(scenario, data)
     rows, raw = [], {}
-    for name in backends:
-        cfg = Config(embedding=name, product_names=("Tempo",))
+    for name in backends or settings["backends"]:
+        cfg = Config(
+            language=settings["language"], embedding=name, product_names=settings["products"]
+        )
         start = time.time()
         result = analyze(dataset.feedback, dataset.accounts, dataset.releases, config=cfg)
         if result.model.backend != name:
@@ -195,18 +232,20 @@ def evaluate(
 @app.command()
 def brief(
     theme_id: str = typer.Argument(..., help="Theme id from a report, e.g. T03."),
-    data: Path = typer.Option(DEMO_DATA, help="Demo dataset directory."),
+    scenario: str = typer.Option("tempo", help=f"Demo scenario: {', '.join(synth.SCENARIOS)}"),
+    data: Path | None = typer.Option(None, help="Demo dataset directory."),
     use_llm: bool | None = typer.Option(None, "--llm/--no-llm"),
 ) -> None:
-    """Print the opportunity brief for one theme of the demo dataset."""
+    """Print the opportunity brief for one theme of a demo dataset."""
     from .briefs import write_brief
 
-    dataset = synth.SyntheticDataset.load(data)
+    settings = _scenario(scenario)
+    dataset = _load_dataset(scenario, data)
     result = analyze(
         dataset.feedback,
         dataset.accounts,
         dataset.releases,
-        config=replace(Config(), product_names=("Tempo",)),
+        config=Config(language=settings["language"], product_names=settings["products"]),
     )
     text, source = write_brief(result, theme_id, use_llm=use_llm)
     typer.echo(text)

@@ -1,0 +1,6 @@
+theme,start_date,end_date,multiplier,kind
+restaurant_network,2026-02-05,,0.55,drop
+login,2026-03-07,2026-04-04,7.0,spike
+app_performance,2026-05-06,,1.0,none
+qr_payment,2026-06-13,,5.0,spike
+balance_loading,2026-01-05,,,monthly pattern

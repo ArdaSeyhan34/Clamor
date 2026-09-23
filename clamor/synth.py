@@ -441,7 +441,7 @@ class SyntheticDataset:
     """All tables of one simulation. Only the first three are inputs to Clamor."""
 
     feedback: pd.DataFrame
-    accounts: pd.DataFrame
+    accounts: pd.DataFrame | None
     releases: pd.DataFrame
     ground_truth: pd.DataFrame  # feedback_id -> true theme and polarity
     events: pd.DataFrame  # what really happened to each theme's rate, and when
@@ -453,19 +453,26 @@ class SyntheticDataset:
         out = Path(directory)
         out.mkdir(parents=True, exist_ok=True)
         for name in self.FILES:
-            getattr(self, name).to_csv(out / f"{name}.csv", index=False)
+            table = getattr(self, name)
+            if table is not None:  # e.g. no accounts table when there is no revenue data
+                table.to_csv(out / f"{name}.csv", index=False)
 
     @classmethod
     def load(cls, directory: str | Path) -> SyntheticDataset:
         src = Path(directory)
-        tables = {name: pd.read_csv(src / f"{name}.csv") for name in cls.FILES}
+        tables = {
+            name: pd.read_csv(src / f"{name}.csv") if (src / f"{name}.csv").exists() else None
+            for name in cls.FILES
+        }
         tables["feedback"]["created_at"] = pd.to_datetime(tables["feedback"]["created_at"])
         return cls(**tables)
 
 
-def _fill(template: str, rng: np.random.Generator) -> str:
+def _fill(template: str, rng: np.random.Generator, slots: dict | None = None) -> str:
+    slots = SLOTS if slots is None else slots
+
     def repl(match: re.Match) -> str:
-        options = SLOTS[match.group(1)]
+        options = slots[match.group(1)]
         return options[rng.integers(len(options))]
 
     return re.sub(r"\{(\w+)\}", repl, template)
@@ -556,9 +563,9 @@ def _make_accounts(n_accounts: int, rng: np.random.Generator) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _rate_multiplier(theme: ThemeSpec, day: int) -> float:
+def _rate_multiplier(theme: ThemeSpec, day: int, events: tuple[Event, ...] | None = None) -> float:
     mult = 1.0 + theme.weekly_growth * (day / 7.0)
-    for ev in EVENTS:
+    for ev in EVENTS if events is None else events:
         if ev.theme != theme.key or day < ev.start_day:
             continue
         if ev.end_day is not None and day >= ev.end_day:
@@ -715,3 +722,20 @@ def generate(
         events=events,
         release_truth=release_truth,
     )
+
+
+SCENARIOS = {
+    "tempo": "English B2B team-calendar SaaS with accounts and revenue (default demo)",
+    "lezzo": "Turkish employee meal-card app, end-user feedback only, no revenue data",
+}
+
+
+def generate_scenario(name: str = "tempo", **kwargs) -> SyntheticDataset:
+    """Generate one of the bundled demo scenarios (see ``SCENARIOS``)."""
+    if name == "tempo":
+        return generate(**kwargs)
+    if name == "lezzo":
+        from .synth_lezzo import generate as generate_lezzo
+
+        return generate_lezzo(**kwargs)
+    raise ValueError(f"Unknown scenario {name!r}; choose from {sorted(SCENARIOS)}")

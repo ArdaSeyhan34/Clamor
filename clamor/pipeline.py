@@ -18,9 +18,11 @@ from .config import Config, Weights
 from .embeddings import Embedder, get_embedder
 from .impact import match_releases, release_radar
 from .io import load_accounts, load_feedback, load_releases
+from .lang import LanguagePack, get_language, with_ascii_variants
+from .privacy import redact
 from .scoring import score_themes
 from .sentiment import score_feedback
-from .text import BOILERPLATE_PROTOTYPES, boilerplate_mask, segment_feedback
+from .text import boilerplate_mask, segment_feedback
 from .themes import OTHER, ThemeModel, cluster_vectors, consolidate, describe_themes
 from .trends import detect_trends, weekly_mentions
 
@@ -53,18 +55,22 @@ def build_theme_model(
     sentiment: pd.Series | None = None,
 ) -> ThemeModel:
     feedback = feedback.reset_index(drop=True)
-    embedder = embedder or get_embedder(config.embedding)
+    lang = get_language(config.language)
+    embedder = embedder or get_embedder(config.backend, lang=lang)
     backend = embedder.name
     if config.segment_sentences:
-        segments = segment_feedback(feedback, config.product_names)
+        segments = segment_feedback(feedback, config.product_names, lang)
     else:  # ablation: one "segment" per item, the way most feedback tools work
         segments = pd.DataFrame(
             {"doc": range(len(feedback)), "position": 0, "text": feedback["text"].astype(str)}
         )
     texts = segments["text"].tolist()
-    embedder.fit(texts + list(BOILERPLATE_PROTOTYPES))
+    protos = list(lang.boilerplate_prototypes)
+    if lang.code == "tr":  # informal reviews often skip Turkish characters
+        protos = list(with_ascii_variants(lang.boilerplate_prototypes))
+    embedder.fit(texts + protos)
     vectors = embedder.encode(texts)
-    prototypes = embedder.encode(list(BOILERPLATE_PROTOTYPES))
+    prototypes = embedder.encode(protos)
 
     b_thr = config.boilerplate_threshold or config.backend_default("boilerplate_threshold", backend)
     boiler = boilerplate_mask(vectors, prototypes, b_thr)
@@ -85,14 +91,19 @@ def build_theme_model(
     if config.consolidate:
         semantic = getattr(embedder, "semantic_part", lambda v: v)(vectors)
         labels[content] = consolidate(
-            labels[content], [texts[i] for i in np.flatnonzero(content)], semantic[content]
+            labels[content],
+            [texts[i] for i in np.flatnonzero(content)],
+            semantic[content],
+            lang=lang,
         )
     segments["is_boilerplate"] = ~content
     segments["cluster"] = labels
 
     if sentiment is None:
-        sentiment = score_feedback(feedback)
-    return _finalize(segments, vectors, sentiment.to_numpy(), len(feedback), backend, embedder)
+        sentiment = score_feedback(feedback, lang=lang)
+    return _finalize(
+        segments, vectors, sentiment.to_numpy(), len(feedback), backend, embedder, lang
+    )
 
 
 def _finalize(
@@ -102,6 +113,7 @@ def _finalize(
     n_docs: int,
     backend: str,
     embedder: Embedder | None,
+    lang: LanguagePack,
 ) -> ThemeModel:
     """Describe the clusters in `segments["cluster"]` and derive per-item theme mentions."""
     segments = segments.copy()
@@ -112,6 +124,7 @@ def _finalize(
         vectors[content],
         labels[content],
         doc_sentiment,
+        lang=lang,
     )
     id_of = dict(zip(themes["cluster"], themes["theme_id"], strict=True))
     segments["theme_id"] = segments["cluster"].map(id_of)
@@ -138,6 +151,7 @@ def _finalize(
         vectors=vectors,
         embedder=embedder,
         doc_sentiment=doc_sentiment,
+        language=lang.code,
     )
 
 
@@ -171,6 +185,7 @@ def merge_themes(model: ThemeModel, merges: dict[str, str]) -> ThemeModel:
         len(model.primary),
         model.backend,
         model.embedder,
+        get_language(model.language),
     )
 
 
@@ -221,7 +236,9 @@ def analyze(
     fb = load_feedback(feedback)
     acc = load_accounts(accounts)
     rel = load_releases(releases)
-    fb["sentiment"] = score_feedback(fb)
+    if config.redact_pii:  # before anything is embedded, stored in a report or sent to an API
+        fb["text"] = fb["text"].map(redact)
+    fb["sentiment"] = score_feedback(fb, lang=get_language(config.language))
     if model is None:
         model = build_theme_model(fb, config, embedder=embedder, sentiment=fb["sentiment"])
 
