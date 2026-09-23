@@ -9,7 +9,7 @@ description = "Turn the noise of customer feedback into a revenue-weighted, stat
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "Arda Seyhan" }]
+authors = [{ name = "Taha Arda Seyhan" }]
 keywords = ["product-management", "nlp", "customer-feedback", "clustering", "analytics", "llm"]
 classifiers = [
     "Programming Language :: Python :: 3",
