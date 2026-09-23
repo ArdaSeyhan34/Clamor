@@ -1,0 +1,68 @@
+# Clamor report
+
+*3,170 feedback items from 589 accounts, Jan 05, 2026 to Jul 05, 2026. 25 themes discovered with the `minilm` embedding backend. Priority reflects the last 60 days.*
+
+## Key insights
+
+- **Top priority: The mobile app takes forever to load.** Score 60/100, driven mostly by reach and severity: 190 mentions from 162 accounts in the last 60 days.
+- **Early warning: The new recurring event editor will not let me set custom… is emerging.** Mention rate is 3.3x its baseline over the last 28 days (95% CI 1.9-5.9, q < 0.001).
+- **Loud, but not the most valuable: Please add a dark mode.** #2 by raw mention count, #11 by priority. 66% of its mentions come from free accounts.
+- **Quiet, but expensive: IT wants to manage access through OneLogin, is SSO on the….** Only #10 by mention count, yet the largest revenue-weighted demand ($34.5k MRR; accounts raising it hold $1.6M ARR). 69% of mentions come from enterprise.
+- **v3.5 (Recurring events editor): Worse.** Mentions of “The new recurring event editor will not let me set custom…” changed +120% relative to overall feedback after the release (95% CI x1.10-x4.88).
+- **v3.4 (Android performance pass): No detectable change.** Mentions of “The mobile app takes forever to load” changed +8% relative to overall feedback after the release (95% CI x0.79-x1.47).
+
+## Prioritized roadmap
+
+| Rank | Theme | Type | Score | Mentions | Accounts | Revenue-weighted MRR | Trend | Rank by mentions |
+|---:|---|---|---:|---:|---:|---|---|---:|
+| 1 | The mobile app takes forever to load | Bug | 60.0 | 190 | 162 | $9,290 | – stable | 1 |
+| 2 | The new recurring event editor will not let me set custom… | Bug | 57.5 | 41 | 39 | $4,759 | ▲ emerging | 9 |
+| 3 | Calendar sync is completely unreliable again | Bug | 52.7 | 55 | 52 | $15,674 | ↘ declining | 6 |
+| 4 | Meeting times are wrong when attendees are in different… | Bug | 51.5 | 70 | 63 | $15,713 | – stable | 5 |
+| 5 | We would love to schedule meetings directly from Slack | Feature request | 50.1 | 133 | 118 | $20,941 | – stable | 3 |
+| 6 | Way too many email notifications, I am drowning in reminders | Usability | 48.7 | 76 | 73 | $10,177 | – stable | 4 |
+| 7 | IT wants to manage access through OneLogin, is SSO on the… | Feature request | 48.1 | 32 | 26 | $34,482 | – stable | 10 |
+| 8 | Paying per seat makes no sense for occasional users | Pricing | 42.9 | 46 | 44 | $5,049 | – stable | 8 |
+| 9 | Hard to justify the cost to my manager after the price… | Pricing | 42.4 | 51 | 45 | $5,140 | – stable | 7 |
+| 10 | Offboarding users by hand is a compliance risk, we need SCIM | Feature request | 40.0 | 9 | 8 | $15,283 | – stable | 18 |
+| 11 | Please add a dark mode | Feature request | 38.0 | 172 | 150 | $3,370 | – stable | 2 |
+| 12 | The Pro plan now costs more than tools that do much more | Pricing | 35.9 | 27 | 25 | $8,357 | – stable | 11 |
+| 13 | Onboarding is confusing for anyone who is not technical | Usability | 32.2 | 21 | 21 | $487 | – stable | 13 |
+| 14 | I cannot turn off the daily digest emails | Usability | 29.0 | 14 | 14 | $577 | – stable | 17 |
+| 15 | The setup wizard skipped steps and left my workspace half… | Usability | 28.3 | 25 | 25 | $901 | – stable | 12 |
+
+## Early warnings
+
+| Theme | Status | Rate vs baseline | 95% CI | q-value |
+|---|---|---|---|---|
+| The new recurring event editor will not let me set custom… | ▲ emerging | x3.28 | x1.85 - x5.91 | 0.0004 |
+
+## Release radar
+
+Did each release change what customers talk about? Rates are compared in windows of up to 28 days before and after each release, normalized for overall feedback volume.
+
+| Date | Release | Linked theme | Before → after | Rate change | Verdict |
+|---|---|---|---|---|---|
+| 2026-02-12 | v3.1 · Guided onboarding | Onboarding is confusing for anyone who is not technical | 18 → 4 | x0.58 | Inconclusive |
+| 2026-02-26 | pricing-2026-02 · Pro plan price update | The Pro plan now costs more than tools that do much more | 2 → 4 | x1.53 | Inconclusive |
+| 2026-03-12 | v3.2 · Sync engine 2.0 | Calendar sync is completely unreliable again | 15 → 125 | x3.53 | Worse |
+| 2026-04-16 | v3.3 · Sync hotfix | Calendar sync is completely unreliable again | 136 → 28 | x0.19 | Resolved |
+| 2026-05-14 | v3.4 · Android performance pass | The mobile app takes forever to load | 86 → 84 | x1.08 | No detectable change |
+| 2026-06-11 | v3.5 · Recurring events editor | The new recurring event editor will not let me set custom… | 12 → 27 | x2.20 | Worse |
+
+## Accuracy against ground truth (synthetic data)
+
+| Metric | Value |
+|---|---|
+| Adjusted Rand index | 0.815 |
+| Normalized mutual information | 0.872 |
+| Homogeneity (theme purity) | 0.953 |
+| Items landing in a theme about their true topic | 93.2% |
+| Sentiment sign accuracy | 86.8% |
+| Releases linked to the right theme | 6/6 |
+| Spikes detected (Clamor / naive 2x rule) | 3/3 / 3/3 |
+| Median days to detect (Clamor / naive) | 8 / 6 |
+| False alarm episodes (Clamor / naive) | 0 / 34 |
+
+---
+*Generated by [Clamor](https://github.com/ArdaSeyhan34/NewRepo).*

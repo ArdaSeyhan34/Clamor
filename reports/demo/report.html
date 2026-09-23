@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clamor report</title>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<style>
+  :root { color-scheme:light; --bg:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b;
+          --ink2:#52514e; --muted:#898781; --line:#e1e0d9; --good:#006300; --bad:#d03b3b;
+          --accent:#2a78d6; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  main { max-width:1080px; margin:0 auto; padding:32px 16px 64px; }
+  h1 { font-size:28px; margin:0 0 4px; } h2 { font-size:19px; margin:40px 0 12px; }
+  .sub { color:var(--ink2); margin:0 0 24px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+  .tile, .card { background:var(--surface); border:1px solid var(--line); border-radius:10px;
+                 padding:14px 16px; }
+  .tile .v { font-size:24px; font-weight:600; } .tile .k { color:var(--ink2); font-size:13px; }
+  .insights { display:grid; gap:10px; }
+  .insight b { display:block; } .insight span { color:var(--ink2); }
+  table { width:100%; border-collapse:collapse; font-size:14px; background:var(--surface); }
+  th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); }
+  th { color:var(--ink2); font-weight:600; } td.num, th.num { text-align:right;
+       font-variant-numeric:tabular-nums; }
+  .scroll { overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  .note { color:var(--muted); font-size:13px; }
+  footer { margin-top:48px; color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body><main>
+<h1>Clamor report</h1>
+<p class="sub">3,170 feedback items · Jan 05, 2026 to Jul 05, 2026</p>
+<div class="grid">
+<div class="tile">
+  <div class="v">3,170</div><div class="k">feedback items</div></div>
+<div class="tile">
+  <div class="v">589</div><div class="k">accounts</div></div>
+<div class="tile">
+  <div class="v">25</div><div class="k">themes</div></div>
+<div class="tile">
+  <div class="v">1</div><div class="k">early warnings</div></div>
+<div class="tile">
+  <div class="v">$187,056</div><div class="k">MRR represented</div></div>
+</div>
+
+<h2>Key insights</h2>
+<div class="insights">
+<div class="card insight">
+  <b>Top priority: The mobile app takes forever to load</b><span>Score 60/100, driven mostly by reach and severity: 190 mentions from 162 accounts in the last 60 days.</span></div>
+<div class="card insight">
+  <b>Early warning: The new recurring event editor will not let me set custom… is emerging</b><span>Mention rate is 3.3x its baseline over the last 28 days (95% CI 1.9-5.9, q &lt; 0.001).</span></div>
+<div class="card insight">
+  <b>Loud, but not the most valuable: Please add a dark mode</b><span>#2 by raw mention count, #11 by priority. 66% of its mentions come from free accounts.</span></div>
+<div class="card insight">
+  <b>Quiet, but expensive: IT wants to manage access through OneLogin, is SSO on the…</b><span>Only #10 by mention count, yet the largest revenue-weighted demand ($34.5k MRR; accounts raising it hold $1.6M ARR). 69% of mentions come from enterprise.</span></div>
+<div class="card insight">
+  <b>v3.5 (Recurring events editor): Worse</b><span>Mentions of “The new recurring event editor will not let me set custom…” changed +120% relative to overall feedback after the release (95% CI x1.10-x4.88).</span></div>
+<div class="card insight">
+  <b>v3.4 (Android performance pass): No detectable change</b><span>Mentions of “The mobile app takes forever to load” changed +8% relative to overall feedback after the release (95% CI x0.79-x1.47).</span></div>
+</div>
+
+<h2>What to work on next</h2>
+<p class="note">Points each signal contributes to the priority score (weights: reach 25%, revenue 35%, severity 20%, momentum 20%).</p>
+<div class="card"><div style="height:470px; width:100%;">                            <div id="5cb19a1f-d447-4825-a53d-6b500422b587" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("5cb19a1f-d447-4825-a53d-6b500422b587")) {                    Plotly.newPlot(                        "5cb19a1f-d447-4825-a53d-6b500422b587",                        [{"customdata":[["T01",60.00879917231421],["T11",57.527956845366425],["T04",52.67002550036564],["T05",51.50229608063282],["T03",50.1156962689437],["T06",48.6907287142582],["T10",48.14042020962219],["T08",42.94372649431423],["T07",42.375148916881614],["T24",39.96751146757778],["T02",38.021939818044956],["T17",35.9398438198809]],"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eReach: %{x:.1f} pts\u003cbr\u003eTotal score: %{customdata[1]:.1f}\u003cextra\u003e%{customdata[0]}\u003c\u002fextra\u003e","marker":{"color":"#2a78d6","line":{"color":"#fcfcfb","width":2}},"name":"Reach","orientation":"h","x":{"dtype":"f8","bdata":"AAAAAAAAOUBMshgAXYgoQA9fYFnwUyxAluwh0jMuL0D82A3pJVY1QARaG7IxyDBAsAxgKOUHJECSBi5D0A4qQCEfTj0xWipAjuM4juM4FkCNwpMiZw44QLBVh5xQpCNA"},"y":["The mobile app takes forever to load  ","The new recurring event editor will n\u2026  ","Calendar sync is completely unreliabl\u2026  ","Meeting times are wrong when attendee\u2026  ","We would love to schedule meetings di\u2026  ","Way too many email notifications, I a\u2026  ","IT wants to manage access through One\u2026  ","Paying per seat makes no sense for oc\u2026  ","Hard to justify the cost to my manage\u2026  ","Offboarding users by hand is a compli\u2026  ","Please add a dark mode  ","The Pro plan now costs more than tool\u2026  "],"type":"bar"},{"customdata":[["T01",60.00879917231421],["T11",57.527956845366425],["T04",52.67002550036564],["T05",51.50229608063282],["T03",50.1156962689437],["T06",48.6907287142582],["T10",48.14042020962219],["T08",42.94372649431423],["T07",42.375148916881614],["T24",39.96751146757778],["T02",38.021939818044956],["T17",35.9398438198809]],"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eRevenue: %{x:.1f} pts\u003cbr\u003eTotal score: %{customdata[1]:.1f}\u003cextra\u003e%{customdata[0]}\u003c\u002fextra\u003e","marker":{"color":"#eb6834","line":{"color":"#fcfcfb","width":2}},"name":"Revenue","orientation":"h","x":{"dtype":"f8","bdata":"zUS4c6wqMkAwMOrnMgEqQAW8T2\u002fUmDdAOR99\u002flegN0Da8P\u002f7gUY7QFRtd22UAzNAAAAAAACAQUBnWSB3PskqQE\u002fHJOiCBitAuRU1KgRNN0DWs1k9heIlQGaDnhPjOjFA"},"y":["The mobile app takes forever to load  ","The new recurring event editor will n\u2026  ","Calendar sync is completely unreliabl\u2026  ","Meeting times are wrong when attendee\u2026  ","We would love to schedule meetings di\u2026  ","Way too many email notifications, I a\u2026  ","IT wants to manage access through One\u2026  ","Paying per seat makes no sense for oc\u2026  ","Hard to justify the cost to my manage\u2026  ","Offboarding users by hand is a compli\u2026  ","Please add a dark mode  ","The Pro plan now costs more than tool\u2026  "],"type":"bar"},{"customdata":[["T01",60.00879917231421],["T11",57.527956845366425],["T04",52.67002550036564],["T05",51.50229608063282],["T03",50.1156962689437],["T06",48.6907287142582],["T10",48.14042020962219],["T08",42.94372649431423],["T07",42.375148916881614],["T24",39.96751146757778],["T02",38.021939818044956],["T17",35.9398438198809]],"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eSeverity: %{x:.1f} pts\u003cbr\u003eTotal score: %{customdata[1]:.1f}\u003cextra\u003e%{customdata[0]}\u003c\u002fextra\u003e","marker":{"color":"#1baf7a","line":{"color":"#fcfcfb","width":2}},"name":"Severity","orientation":"h","x":{"dtype":"f8","bdata":"eQ3lNZTXMEA+BudjcD4uQNJFF1100S1AJUmSJEmSKED2gNkDZg\u002f4P6K8hvIayilAAAAAAAAACUDIQhaykIUwQF9fX19fXy9AjuM4juM4JkAM+oK+oC8IQHIcx3EcxyFA"},"y":["The mobile app takes forever to load  ","The new recurring event editor will n\u2026  ","Calendar sync is completely unreliabl\u2026  ","Meeting times are wrong when attendee\u2026  ","We would love to schedule meetings di\u2026  ","Way too many email notifications, I a\u2026  ","IT wants to manage access through One\u2026  ","Paying per seat makes no sense for oc\u2026  ","Hard to justify the cost to my manage\u2026  ","Offboarding users by hand is a compli\u2026  ","Please add a dark mode  ","The Pro plan now costs more than tool\u2026  "],"type":"bar"},{"customdata":[["T01",60.00879917231421],["T11",57.527956845366425],["T04",52.67002550036564],["T05",51.50229608063282],["T03",50.1156962689437],["T06",48.6907287142582],["T10",48.14042020962219],["T08",42.94372649431423],["T07",42.375148916881614],["T24",39.96751146757778],["T02",38.021939818044956],["T17",35.9398438198809]],"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eMomentum: %{x:.1f} pts\u003cbr\u003eTotal score: %{customdata[1]:.1f}\u003cextra\u003e%{customdata[0]}\u003c\u002fextra\u003e","marker":{"color":"#eda100","line":{"color":"#fcfcfb","width":2}},"name":"Momentum","orientation":"h","x":{"dtype":"f8","bdata":"AAAAAAAAAADzlxMIKCMxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"},"y":["The mobile app takes forever to load  ","The new recurring event editor will n\u2026  ","Calendar sync is completely unreliabl\u2026  ","Meeting times are wrong when attendee\u2026  ","We would love to schedule meetings di\u2026  ","Way too many email notifications, I a\u2026  ","IT wants to manage access through One\u2026  ","Paying per seat makes no sense for oc\u2026  ","Hard to justify the cost to my manage\u2026  ","Offboarding users by hand is a compli\u2026  ","Please add a dark mode  ","The Pro plan now costs more than tool\u2026  "],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"annotations":[{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"60","x":60.00879917231421,"xanchor":"left","xshift":6,"y":"The mobile app takes forever to load  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"58","x":57.527956845366425,"xanchor":"left","xshift":6,"y":"The new recurring event editor will n\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"53","x":52.67002550036564,"xanchor":"left","xshift":6,"y":"Calendar sync is completely unreliabl\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"52","x":51.50229608063282,"xanchor":"left","xshift":6,"y":"Meeting times are wrong when attendee\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"50","x":50.1156962689437,"xanchor":"left","xshift":6,"y":"We would love to schedule meetings di\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"49","x":48.6907287142582,"xanchor":"left","xshift":6,"y":"Way too many email notifications, I a\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"48","x":48.14042020962219,"xanchor":"left","xshift":6,"y":"IT wants to manage access through One\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"43","x":42.94372649431423,"xanchor":"left","xshift":6,"y":"Paying per seat makes no sense for oc\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"42","x":42.375148916881614,"xanchor":"left","xshift":6,"y":"Hard to justify the cost to my manage\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"40","x":39.96751146757778,"xanchor":"left","xshift":6,"y":"Offboarding users by hand is a compli\u2026  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"38","x":38.021939818044956,"xanchor":"left","xshift":6,"y":"Please add a dark mode  "},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"36","x":35.9398438198809,"xanchor":"left","xshift":6,"y":"The Pro plan now costs more than tool\u2026  "}],"yaxis":{"autorange":"reversed","showgrid":false,"tickfont":{"color":"#52514e"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"xaxis":{"title":{"text":"Priority score (points by signal)"},"range":[0,105],"tickfont":{"color":"#898781"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"margin":{"l":292,"r":20,"t":40,"b":50},"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":13,"color":"#52514e"},"hoverlabel":{"font":{"family":"system-ui, sans-serif"}},"legend":{"orientation":"h","yanchor":"bottom","y":1.0,"x":0,"traceorder":"normal"},"height":470,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","barmode":"stack","bargap":0.35},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+<div class="scroll" style="margin-top:12px"><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Rank</th>
+      <th>Theme</th>
+      <th>Type</th>
+      <th>Score</th>
+      <th>Mentions</th>
+      <th>Accounts</th>
+      <th>Revenue-weighted MRR</th>
+      <th>Trend</th>
+      <th>Rank by mentions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>The mobile app takes forever to load</td>
+      <td>Bug</td>
+      <td>60.0</td>
+      <td>190</td>
+      <td>162</td>
+      <td>$9,290</td>
+      <td>– stable</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>The new recurring event editor will not let me set custom…</td>
+      <td>Bug</td>
+      <td>57.5</td>
+      <td>41</td>
+      <td>39</td>
+      <td>$4,759</td>
+      <td>▲ emerging</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Calendar sync is completely unreliable again</td>
+      <td>Bug</td>
+      <td>52.7</td>
+      <td>55</td>
+      <td>52</td>
+      <td>$15,674</td>
+      <td>↘ declining</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Meeting times are wrong when attendees are in different…</td>
+      <td>Bug</td>
+      <td>51.5</td>
+      <td>70</td>
+      <td>63</td>
+      <td>$15,713</td>
+      <td>– stable</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>We would love to schedule meetings directly from Slack</td>
+      <td>Feature request</td>
+      <td>50.1</td>
+      <td>133</td>
+      <td>118</td>
+      <td>$20,941</td>
+      <td>– stable</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Way too many email notifications, I am drowning in reminders</td>
+      <td>Usability</td>
+      <td>48.7</td>
+      <td>76</td>
+      <td>73</td>
+      <td>$10,177</td>
+      <td>– stable</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td>IT wants to manage access through OneLogin, is SSO on the…</td>
+      <td>Feature request</td>
+      <td>48.1</td>
+      <td>32</td>
+      <td>26</td>
+      <td>$34,482</td>
+      <td>– stable</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <td>8</td>
+      <td>Paying per seat makes no sense for occasional users</td>
+      <td>Pricing</td>
+      <td>42.9</td>
+      <td>46</td>
+      <td>44</td>
+      <td>$5,049</td>
+      <td>– stable</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>9</td>
+      <td>Hard to justify the cost to my manager after the price…</td>
+      <td>Pricing</td>
+      <td>42.4</td>
+      <td>51</td>
+      <td>45</td>
+      <td>$5,140</td>
+      <td>– stable</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>10</td>
+      <td>Offboarding users by hand is a compliance risk, we need SCIM</td>
+      <td>Feature request</td>
+      <td>40.0</td>
+      <td>9</td>
+      <td>8</td>
+      <td>$15,283</td>
+      <td>– stable</td>
+      <td>18</td>
+    </tr>
+    <tr>
+      <td>11</td>
+      <td>Please add a dark mode</td>
+      <td>Feature request</td>
+      <td>38.0</td>
+      <td>172</td>
+      <td>150</td>
+      <td>$3,370</td>
+      <td>– stable</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>The Pro plan now costs more than tools that do much more</td>
+      <td>Pricing</td>
+      <td>35.9</td>
+      <td>27</td>
+      <td>25</td>
+      <td>$8,357</td>
+      <td>– stable</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <td>13</td>
+      <td>Onboarding is confusing for anyone who is not technical</td>
+      <td>Usability</td>
+      <td>32.2</td>
+      <td>21</td>
+      <td>21</td>
+      <td>$487</td>
+      <td>– stable</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <td>14</td>
+      <td>I cannot turn off the daily digest emails</td>
+      <td>Usability</td>
+      <td>29.0</td>
+      <td>14</td>
+      <td>14</td>
+      <td>$577</td>
+      <td>– stable</td>
+      <td>17</td>
+    </tr>
+    <tr>
+      <td>15</td>
+      <td>The setup wizard skipped steps and left my workspace half…</td>
+      <td>Usability</td>
+      <td>28.3</td>
+      <td>25</td>
+      <td>25</td>
+      <td>$901</td>
+      <td>– stable</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <td>16</td>
+      <td>Please add an api endpoint for exporting events</td>
+      <td>Feature request</td>
+      <td>27.1</td>
+      <td>19</td>
+      <td>18</td>
+      <td>$6,898</td>
+      <td>– stable</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <td>17</td>
+      <td>Every calendar change triggers an email to the whole team</td>
+      <td>Usability</td>
+      <td>22.9</td>
+      <td>16</td>
+      <td>16</td>
+      <td>$1,614</td>
+      <td>– stable</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <td>18</td>
+      <td>Please add SCIM provisioning so IT can manage users from…</td>
+      <td>Feature request</td>
+      <td>19.2</td>
+      <td>6</td>
+      <td>5</td>
+      <td>$6,162</td>
+      <td>– stable</td>
+      <td>19</td>
+    </tr>
+    <tr>
+      <td>19</td>
+      <td>Our whole company switched and nobody looked back</td>
+      <td>Usability</td>
+      <td>13.4</td>
+      <td>17</td>
+      <td>17</td>
+      <td>$794</td>
+      <td>– stable</td>
+      <td>15</td>
+    </tr>
+  </tbody>
+</table></div>
+
+<h2>Counting votes vs. weighing evidence</h2>
+<p class="note">Rank by raw number of mentions (left) vs. Clamor's priority (right).
+Highlighted lines moved the most.</p>
+<div class="card"><div style="height:620px; width:100%;">                            <div id="0b7068d9-64e2-4e0b-934b-71e00c0ffeee" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0b7068d9-64e2-4e0b-934b-71e00c0ffeee")) {                    Plotly.newPlot(                        "0b7068d9-64e2-4e0b-934b-71e00c0ffeee",                        [{"hovertemplate":"\u003cb\u003eThe mobile app takes forever to load\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #1\u003cbr\u003eBy priority: #1\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[1.0,1.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eThe new recurring event editor will not let me set custom\u2026\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #9\u003cbr\u003eBy priority: #2\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#2a78d6","width":2},"marker":{"color":"#2a78d6","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":1,"showlegend":false,"x":[0,1],"y":[9.0,2.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eCalendar sync is completely unreliable again\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #6\u003cbr\u003eBy priority: #3\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[6.0,3.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eMeeting times are wrong when attendees are in different\u2026\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #5\u003cbr\u003eBy priority: #4\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[5.0,4.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eWe would love to schedule meetings directly from Slack\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #3\u003cbr\u003eBy priority: #5\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[3.0,5.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eWay too many email notifications, I am drowning in reminders\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #4\u003cbr\u003eBy priority: #6\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[4.0,6.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eIT wants to manage access through OneLogin, is SSO on the\u2026\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #10\u003cbr\u003eBy priority: #7\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#2a78d6","width":2},"marker":{"color":"#2a78d6","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":1,"showlegend":false,"x":[0,1],"y":[10.0,7.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003ePaying per seat makes no sense for occasional users\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #8\u003cbr\u003eBy priority: #8\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[8.0,8.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eHard to justify the cost to my manager after the price\u2026\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #7\u003cbr\u003eBy priority: #9\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#898781","width":1},"marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":0.55,"showlegend":false,"x":[0,1],"y":[7.0,9.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003eOffboarding users by hand is a compliance risk, we need SCIM\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #18\u003cbr\u003eBy priority: #10\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#2a78d6","width":2},"marker":{"color":"#2a78d6","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":1,"showlegend":false,"x":[0,1],"y":[18.0,10.0],"type":"scatter"},{"hovertemplate":"\u003cb\u003ePlease add a dark mode\u003c\u002fb\u003e\u003cbr\u003eBy mentions: #2\u003cbr\u003eBy priority: #11\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#d03b3b","width":2},"marker":{"color":"#d03b3b","line":{"color":"#fcfcfb","width":2},"size":9},"mode":"lines+markers","opacity":1,"showlegend":false,"x":[0,1],"y":[2.0,11.0],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"annotations":[{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"The mobile app takes forever\u2026","x":1,"xanchor":"left","xshift":10,"y":1.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"The mobile app takes forever\u2026","x":0,"xanchor":"right","xshift":-10,"y":1.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003eThe new recurring event edito\u2026\u003c\u002fb\u003e","x":1,"xanchor":"left","xshift":10,"y":2.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003eThe new recurring event edito\u2026\u003c\u002fb\u003e","x":0,"xanchor":"right","xshift":-10,"y":9.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Calendar sync is completely u\u2026","x":1,"xanchor":"left","xshift":10,"y":3.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Calendar sync is completely u\u2026","x":0,"xanchor":"right","xshift":-10,"y":6.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Meeting times are wrong when\u2026","x":1,"xanchor":"left","xshift":10,"y":4.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Meeting times are wrong when\u2026","x":0,"xanchor":"right","xshift":-10,"y":5.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"We would love to schedule mee\u2026","x":1,"xanchor":"left","xshift":10,"y":5.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"We would love to schedule mee\u2026","x":0,"xanchor":"right","xshift":-10,"y":3.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Way too many email notificati\u2026","x":1,"xanchor":"left","xshift":10,"y":6.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Way too many email notificati\u2026","x":0,"xanchor":"right","xshift":-10,"y":4.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003eIT wants to manage access thr\u2026\u003c\u002fb\u003e","x":1,"xanchor":"left","xshift":10,"y":7.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003eIT wants to manage access thr\u2026\u003c\u002fb\u003e","x":0,"xanchor":"right","xshift":-10,"y":10.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Paying per seat makes no sens\u2026","x":1,"xanchor":"left","xshift":10,"y":8.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Paying per seat makes no sens\u2026","x":0,"xanchor":"right","xshift":-10,"y":8.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Hard to justify the cost to m\u2026","x":1,"xanchor":"left","xshift":10,"y":9.0},{"font":{"color":"#52514e","size":12},"showarrow":false,"text":"Hard to justify the cost to m\u2026","x":0,"xanchor":"right","xshift":-10,"y":7.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003eOffboarding users by hand is\u2026\u003c\u002fb\u003e","x":1,"xanchor":"left","xshift":10,"y":10.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003eOffboarding users by hand is\u2026\u003c\u002fb\u003e","x":0,"xanchor":"right","xshift":-10,"y":18.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003ePlease add a dark mode\u003c\u002fb\u003e","x":1,"xanchor":"left","xshift":10,"y":11.0},{"font":{"color":"#0b0b0b","size":12},"showarrow":false,"text":"\u003cb\u003ePlease add a dark mode\u003c\u002fb\u003e","x":0,"xanchor":"right","xshift":-10,"y":2.0}],"xaxis":{"tickvals":[0,1],"ticktext":["Rank by mention count","Rank by Clamor priority"],"range":[-0.9,1.9],"showgrid":false,"side":"top","tickfont":{"color":"#898781"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"yaxis":{"autorange":"reversed","range":[18.5,0.5],"showgrid":false,"visible":false,"tickfont":{"color":"#52514e"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"margin":{"l":10,"r":10,"t":50,"b":10},"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":13,"color":"#52514e"},"hoverlabel":{"font":{"family":"system-ui, sans-serif"}},"legend":{"orientation":"h","yanchor":"bottom","y":1.0,"x":0,"title":{}},"height":620,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+
+<h2>How themes moved over time</h2>
+<p class="note">Weekly share of all feedback. Vertical lines mark releases.</p>
+<div class="card"><div style="height:400px; width:100%;">                            <div id="af1a2799-31db-437f-9971-74044717137b" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("af1a2799-31db-437f-9971-74044717137b")) {                    Plotly.newPlot(                        "af1a2799-31db-437f-9971-74044717137b",                        [{"hovertemplate":"%{y:.1f}% of feedback\u003cextra\u003e%{fullData.name}\u003c\u002fextra\u003e","line":{"color":"#2a78d6","shape":"spline","smoothing":0.4,"width":2},"mode":"lines","name":"The new recurring event editor wi\u2026","x":["2026-01-05T00:00:00.000000","2026-01-12T00:00:00.000000","2026-01-19T00:00:00.000000","2026-01-26T00:00:00.000000","2026-02-02T00:00:00.000000","2026-02-09T00:00:00.000000","2026-02-16T00:00:00.000000","2026-02-23T00:00:00.000000","2026-03-02T00:00:00.000000","2026-03-09T00:00:00.000000","2026-03-16T00:00:00.000000","2026-03-23T00:00:00.000000","2026-03-30T00:00:00.000000","2026-04-06T00:00:00.000000","2026-04-13T00:00:00.000000","2026-04-20T00:00:00.000000","2026-04-27T00:00:00.000000","2026-05-04T00:00:00.000000","2026-05-11T00:00:00.000000","2026-05-18T00:00:00.000000","2026-05-25T00:00:00.000000","2026-06-01T00:00:00.000000","2026-06-08T00:00:00.000000","2026-06-15T00:00:00.000000","2026-06-22T00:00:00.000000","2026-06-29T00:00:00.000000"],"y":{"dtype":"f8","bdata":"8lk3mCKfBUC96U1vetPrP2GFzmCFzhBAdAYrdAYrBEB5P3Kar9UTQHQGK3QGKwRAZuUnxFn5GUAfwX0E9xH8P0PNSSAu1Ow\u002fxEndl8dWBEAAAAAAAAAAADkgMtyrYPY\u002ffBphuacR5j8h0QqbA4nmP3PtwFw7MAdAGmG5pxGW+z\u002fsGMW5jlH8P4eHh4eHh+c\u002fOSAy3Ktg5j8AAAAAAAAEQLOYzmI6ixFAutUZqZhb\u002fT90Bit0BisEQOOElDzLiB5AXDIE62jzFkAmVxCTK4gZQA=="},"type":"scatter"},{"hovertemplate":"%{y:.1f}% of feedback\u003cextra\u003e%{fullData.name}\u003c\u002fextra\u003e","line":{"color":"#eb6834","shape":"spline","smoothing":0.4,"width":2},"mode":"lines","name":"Calendar sync is completely unrel\u2026","x":["2026-01-05T00:00:00.000000","2026-01-12T00:00:00.000000","2026-01-19T00:00:00.000000","2026-01-26T00:00:00.000000","2026-02-02T00:00:00.000000","2026-02-09T00:00:00.000000","2026-02-16T00:00:00.000000","2026-02-23T00:00:00.000000","2026-03-02T00:00:00.000000","2026-03-09T00:00:00.000000","2026-03-16T00:00:00.000000","2026-03-23T00:00:00.000000","2026-03-30T00:00:00.000000","2026-04-06T00:00:00.000000","2026-04-13T00:00:00.000000","2026-04-20T00:00:00.000000","2026-04-27T00:00:00.000000","2026-05-04T00:00:00.000000","2026-05-11T00:00:00.000000","2026-05-18T00:00:00.000000","2026-05-25T00:00:00.000000","2026-06-01T00:00:00.000000","2026-06-08T00:00:00.000000","2026-06-15T00:00:00.000000","2026-06-22T00:00:00.000000","2026-06-29T00:00:00.000000"],"y":{"dtype":"f8","bdata":"tG4wRT7rIkCGLGQhC1kYQHQGK3QGKwRAmwjkmgjkGkANSoWJ9yMXQJsI5JoI5BpA4qz8hDgrH0D7CO4juI8YQEPNSSAu1BxAxEndl8dWJED5m\u002fxN\u002fiY7QD1C9Zm2xjdAWe5phOWeMkC81JPx26U4QKqqqqqqqjBAGmG5pxGWC0DOdYziXMcYQGppaWlpaQ1AQWS4V8EsGUCqqqqqqqoQQNdQXkN5DRVAlCWwaT9ZEkCHh4eHh4cXQLDihJQ8yyBAvU9xyRCsE0Bbhg7Y7bEGQA=="},"type":"scatter"},{"hovertemplate":"%{y:.1f}% of feedback\u003cextra\u003e%{fullData.name}\u003c\u002fextra\u003e","line":{"color":"#1baf7a","shape":"spline","smoothing":0.4,"width":2},"mode":"lines","name":"Calendar sync is completely unrel\u2026","x":["2026-01-05T00:00:00.000000","2026-01-12T00:00:00.000000","2026-01-19T00:00:00.000000","2026-01-26T00:00:00.000000","2026-02-02T00:00:00.000000","2026-02-09T00:00:00.000000","2026-02-16T00:00:00.000000","2026-02-23T00:00:00.000000","2026-03-02T00:00:00.000000","2026-03-09T00:00:00.000000","2026-03-16T00:00:00.000000","2026-03-23T00:00:00.000000","2026-03-30T00:00:00.000000","2026-04-06T00:00:00.000000","2026-04-13T00:00:00.000000","2026-04-20T00:00:00.000000","2026-04-27T00:00:00.000000","2026-05-04T00:00:00.000000","2026-05-11T00:00:00.000000","2026-05-18T00:00:00.000000","2026-05-25T00:00:00.000000","2026-06-01T00:00:00.000000","2026-06-08T00:00:00.000000","2026-06-15T00:00:00.000000","2026-06-22T00:00:00.000000","2026-06-29T00:00:00.000000"],"y":{"dtype":"f8","bdata":"tG4wRT7rIkCGLGQhC1kYQHQGK3QGKwRAmwjkmgjkGkANSoWJ9yMXQJsI5JoI5BpA4qz8hDgrH0D7CO4juI8YQEPNSSAu1BxAxEndl8dWJED5m\u002fxN\u002fiY7QD1C9Zm2xjdAWe5phOWeMkC81JPx26U4QKqqqqqqqjBAGmG5pxGWC0DOdYziXMcYQGppaWlpaQ1AQWS4V8EsGUCqqqqqqqoQQNdQXkN5DRVAlCWwaT9ZEkCHh4eHh4cXQLDihJQ8yyBAvU9xyRCsE0Bbhg7Y7bEGQA=="},"type":"scatter"},{"hovertemplate":"%{y:.1f}% of feedback\u003cextra\u003e%{fullData.name}\u003c\u002fextra\u003e","line":{"color":"#eda100","shape":"spline","smoothing":0.4,"width":2},"mode":"lines","name":"The mobile app takes forever to l\u2026","x":["2026-01-05T00:00:00.000000","2026-01-12T00:00:00.000000","2026-01-19T00:00:00.000000","2026-01-26T00:00:00.000000","2026-02-02T00:00:00.000000","2026-02-09T00:00:00.000000","2026-02-16T00:00:00.000000","2026-02-23T00:00:00.000000","2026-03-02T00:00:00.000000","2026-03-09T00:00:00.000000","2026-03-16T00:00:00.000000","2026-03-23T00:00:00.000000","2026-03-30T00:00:00.000000","2026-04-06T00:00:00.000000","2026-04-13T00:00:00.000000","2026-04-20T00:00:00.000000","2026-04-27T00:00:00.000000","2026-05-04T00:00:00.000000","2026-05-11T00:00:00.000000","2026-05-18T00:00:00.000000","2026-05-25T00:00:00.000000","2026-06-01T00:00:00.000000","2026-06-08T00:00:00.000000","2026-06-15T00:00:00.000000","2026-06-22T00:00:00.000000","2026-06-29T00:00:00.000000"],"y":{"dtype":"f8","bdata":"bzBFPusGK0AAAAAAAAA0QDfK7jfK7i9ArolArolALkB5P3Kar9UzQOvFfOrFfDJAUIiz8hPiMEDFdBbTWUwzQFyoOQnEhTZAui+PrQgaMED0EHoIPYQmQC0pB0SGezFAc08jLPc0KkBEK2wOJFopQH1GiZ9R4i9Ayz2NsNzTM0DsGMW5jlEsQGppaWlp6TBAL7rooosuMkAAAAAAAAA5QDGdxXQW0y1AXjiIHt+FK0CmpaWlpaUxQKTkWUb0AS1AZQjW0eZ9NECScErz4k8wQA=="},"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"shapes":[{"line":{"color":"#898781","width":1},"type":"line","x0":"2026-02-12T00:00:00","x1":"2026-02-12T00:00:00","xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#898781","width":1},"type":"line","x0":"2026-02-26T00:00:00","x1":"2026-02-26T00:00:00","xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#898781","width":1},"type":"line","x0":"2026-03-12T00:00:00","x1":"2026-03-12T00:00:00","xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#898781","width":1},"type":"line","x0":"2026-04-16T00:00:00","x1":"2026-04-16T00:00:00","xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#898781","width":1},"type":"line","x0":"2026-05-14T00:00:00","x1":"2026-05-14T00:00:00","xref":"x","y0":0,"y1":1,"yref":"y domain"},{"line":{"color":"#898781","width":1},"type":"line","x0":"2026-06-11T00:00:00","x1":"2026-06-11T00:00:00","xref":"x","y0":0,"y1":1,"yref":"y domain"}],"annotations":[{"font":{"color":"#898781","size":11},"showarrow":false,"text":"v3.1","x":"2026-02-12T00:00:00","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#898781","size":11},"showarrow":false,"text":"pricing-2026","x":"2026-02-26T00:00:00","y":1.07,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#898781","size":11},"showarrow":false,"text":"v3.2","x":"2026-03-12T00:00:00","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#898781","size":11},"showarrow":false,"text":"v3.3","x":"2026-04-16T00:00:00","y":1.07,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#898781","size":11},"showarrow":false,"text":"v3.4","x":"2026-05-14T00:00:00","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"color":"#898781","size":11},"showarrow":false,"text":"v3.5","x":"2026-06-11T00:00:00","y":1.07,"yanchor":"bottom","yref":"paper"}],"yaxis":{"title":{"text":"% of all feedback"},"rangemode":"tozero","tickfont":{"color":"#52514e"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"hovermode":"x unified","margin":{"l":60,"r":20,"t":60,"b":40},"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":13,"color":"#52514e"},"hoverlabel":{"font":{"family":"system-ui, sans-serif"}},"legend":{"orientation":"h","y":-0.15,"x":0,"yanchor":"top"},"height":400,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)","xaxis":{"tickfont":{"color":"#898781"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"}},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+
+
+<h2>Release radar</h2>
+<p class="note">Mention rate of the linked theme after vs. before each release, normalized
+for overall feedback volume, with 95% intervals. Observational evidence, not an experiment.</p>
+<div class="card"><div style="height:382px; width:100%;">                            <div id="0e9fdb19-8154-404b-b130-003250fe8b0f" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0e9fdb19-8154-404b-b130-003250fe8b0f")) {                    Plotly.newPlot(                        "0e9fdb19-8154-404b-b130-003250fe8b0f",                        [{"customdata":{"dtype":"f8","bdata":"AAAAAAAAMkAAAAAAAAAQQJBrwfZposA\u002fkvI8QEKk+T8AAAAAAAAAQAAAAAAAABBAlisTwfJAzz99rPSJjdUyQA==","shape":"2, 4"},"error_x":{"array":{"dtype":"f8","bdata":"8HHf3mNl8D\u002f0I2wBBU0xQA=="},"arrayminus":{"dtype":"f8","bdata":"wkwVikSq3D8VI2YwaqD0Pw=="},"color":"#898781","symmetric":false,"thickness":2,"type":"data"},"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eRate after \u002f before: x%{x:.2f}\u003cbr\u003e95% CI x%{customdata[2]:.2f} - x%{customdata[3]:.2f}\u003cbr\u003eMentions before %{customdata[0]}, after %{customdata[1]}\u003cextra\u003eInconclusive\u003c\u002fextra\u003e","marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":11},"mode":"markers","name":"Inconclusive","x":{"dtype":"f8","bdata":"RQG7wrx94j+IiIiIiIj4Pw=="},"y":["? v3.1 \u00b7 Onboarding is confusing for\u2026","? pricing-2026-02 \u00b7 The Pro plan now costs more\u2026"],"type":"scatter"},{"customdata":{"dtype":"f8","bdata":"AAAAAAAALkAAAAAAAEBfQP+LUqJU8wBALcvy20K5GkAAAAAAAAAoQAAAAAAAADtASAwP5p+i8T8br7GXmIATQA==","shape":"2, 4"},"error_x":{"array":{"dtype":"f8","bdata":"ZlSLzwc6CUCcxMmVl2cFQA=="},"arrayminus":{"dtype":"f8","bdata":"6msPjFKK9j\u002fsJiRNk5DxPw=="},"color":"#d03b3b","symmetric":false,"thickness":2,"type":"data"},"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eRate after \u002f before: x%{x:.2f}\u003cbr\u003e95% CI x%{customdata[2]:.2f} - x%{customdata[3]:.2f}\u003cbr\u003eMentions before %{customdata[0]}, after %{customdata[1]}\u003cextra\u003eWorse\u003c\u002fextra\u003e","marker":{"color":"#d03b3b","line":{"color":"#fcfcfb","width":2},"size":11},"mode":"markers","name":"Worse","x":{"dtype":"f8","bdata":"9EFa6H04DECamZmZmZkBQA=="},"y":["\u25b2 v3.2 \u00b7 Calendar sync is completely\u2026","\u25b2 v3.5 \u00b7 The new recurring event edi\u2026"],"type":"scatter"},{"customdata":{"dtype":"f8","bdata":"AAAAAAAAYUAAAAAAAAA8QOwyNRNDRb4\u002fOt\u002fsxcLW0T8=","shape":"1, 4"},"error_x":{"array":{"dtype":"f8","bdata":"Yn4gPbdytz8="},"arrayminus":{"dtype":"f8","bdata":"mstdxxCjsT8="},"color":"#0ca30c","symmetric":false,"thickness":2,"type":"data"},"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eRate after \u002f before: x%{x:.2f}\u003cbr\u003e95% CI x%{customdata[2]:.2f} - x%{customdata[3]:.2f}\u003cbr\u003eMentions before %{customdata[0]}, after %{customdata[1]}\u003cextra\u003eResolved\u003c\u002fextra\u003e","marker":{"color":"#0ca30c","line":{"color":"#fcfcfb","width":2},"size":11},"mode":"markers","name":"Resolved","x":{"dtype":"f8","bdata":"Q39J7Sn0xz8="},"y":["\u2713 v3.3 \u00b7 Calendar sync is completely\u2026"],"type":"scatter"},{"customdata":{"dtype":"f8","bdata":"AAAAAACAVUAAAAAAAABVQMjeSmpWOuk\u002f2eJP71+S9z8=","shape":"1, 4"},"error_x":{"array":{"dtype":"f8","bdata":"hBez6DJL2T8="},"arrayminus":{"dtype":"f8","bdata":"ULb2\u002f5+J0j8="},"color":"#898781","symmetric":false,"thickness":2,"type":"data"},"hovertemplate":"\u003cb\u003e%{y}\u003c\u002fb\u003e\u003cbr\u003eRate after \u002f before: x%{x:.2f}\u003cbr\u003e95% CI x%{customdata[2]:.2f} - x%{customdata[3]:.2f}\u003cbr\u003eMentions before %{customdata[0]}, after %{customdata[1]}\u003cextra\u003eNo detectable change\u003c\u002fextra\u003e","marker":{"color":"#898781","line":{"color":"#fcfcfb","width":2},"size":11},"mode":"markers","name":"No detectable change","x":{"dtype":"f8","bdata":"+BwjNZM\u002f8T8="},"y":["\u2013 v3.4 \u00b7 The mobile app takes foreve\u2026"],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05}}},"shapes":[{"line":{"color":"#898781","width":1},"type":"line","x0":1,"x1":1,"xref":"x","y0":0,"y1":1,"yref":"y domain"}],"xaxis":{"type":"log","title":{"text":"Mention rate after vs before the release (log scale)"},"tickvals":[0.1,0.25,0.5,1,2,4,10,25],"ticktext":["0.1x","0.25x","0.5x","1x","2x","4x","10x","25x"],"tickfont":{"color":"#898781"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"yaxis":{"autorange":"reversed","showgrid":false,"tickfont":{"color":"#52514e"},"gridcolor":"#e1e0d9","zerolinecolor":"#e1e0d9","linecolor":"#e1e0d9"},"margin":{"l":348,"r":20,"t":80,"b":50},"font":{"family":"system-ui, -apple-system, \"Segoe UI\", sans-serif","size":13,"color":"#52514e"},"hoverlabel":{"font":{"family":"system-ui, sans-serif"}},"legend":{"orientation":"h","yanchor":"bottom","y":1.0,"x":0,"title":{}},"height":382,"paper_bgcolor":"rgba(0,0,0,0)","plot_bgcolor":"rgba(0,0,0,0)"},                        {"displayModeBar": false, "responsive": true}                    )                };            </script>        </div></div>
+<div class="scroll" style="margin-top:12px"><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Date</th>
+      <th>Release</th>
+      <th>Linked theme</th>
+      <th>Before → after</th>
+      <th>Rate change</th>
+      <th>Verdict</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2026-02-12</td>
+      <td>v3.1 · Guided onboarding</td>
+      <td>Onboarding is confusing for anyone who is not technical</td>
+      <td>18 → 4</td>
+      <td>x0.58</td>
+      <td>Inconclusive</td>
+    </tr>
+    <tr>
+      <td>2026-02-26</td>
+      <td>pricing-2026-02 · Pro plan price update</td>
+      <td>The Pro plan now costs more than tools that do much more</td>
+      <td>2 → 4</td>
+      <td>x1.53</td>
+      <td>Inconclusive</td>
+    </tr>
+    <tr>
+      <td>2026-03-12</td>
+      <td>v3.2 · Sync engine 2.0</td>
+      <td>Calendar sync is completely unreliable again</td>
+      <td>15 → 125</td>
+      <td>x3.53</td>
+      <td>Worse</td>
+    </tr>
+    <tr>
+      <td>2026-04-16</td>
+      <td>v3.3 · Sync hotfix</td>
+      <td>Calendar sync is completely unreliable again</td>
+      <td>136 → 28</td>
+      <td>x0.19</td>
+      <td>Resolved</td>
+    </tr>
+    <tr>
+      <td>2026-05-14</td>
+      <td>v3.4 · Android performance pass</td>
+      <td>The mobile app takes forever to load</td>
+      <td>86 → 84</td>
+      <td>x1.08</td>
+      <td>No detectable change</td>
+    </tr>
+    <tr>
+      <td>2026-06-11</td>
+      <td>v3.5 · Recurring events editor</td>
+      <td>The new recurring event editor will not let me set custom…</td>
+      <td>12 → 27</td>
+      <td>x2.20</td>
+      <td>Worse</td>
+    </tr>
+  </tbody>
+</table></div>
+
+
+<footer>Generated by Clamor · embedding backend <code>minilm</code> ·
+as of 2026-07-05</footer>
+</main></body></html>
