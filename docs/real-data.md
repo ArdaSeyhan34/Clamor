@@ -43,10 +43,10 @@ The loader handles UTF-8, UTF-16 and Windows-1254 files, comma or semicolon sepa
 (Excel in a Turkish locale writes `;`), day-first dates such as `12.03.2026 10:15`, and
 prepends a subject or review title to the body.
 
-Pass several files at once and they are combined. Each file keeps its own channel (the
-file name, unless it has a `channel` column), so the report shows whether a problem shows
-up in reviews, in tickets or in both. Monthly Play Console files can be passed together
-the same way.
+Pass several files at once and they are combined. Each file keeps its own channel (its
+name without a trailing date, unless it has a `channel` column), so the report shows
+whether a problem comes up in reviews, in tickets or in both. Monthly Play Console files
+(`reviews_202601.csv`, `reviews_202602.csv`, ...) end up in one channel.
 
 If the export has a customer or user ID column (`user_id`, `Müşteri No`, ...), reach counts
 distinct people; without one, every item counts as its own person.
@@ -118,7 +118,9 @@ A useful routine for a weekly review:
   boilerplate prototypes of the language in `clamor/lang.py`.
 - **The product or company name dominating keywords:** pass it with `--product-name`
   (repeatable).
-- **Dates parsed wrongly:** check a few rows of `roadmap.csv`; ambiguous formats such as
-  `03/04/2026` are read day first when most rows look day first.
+- **Dates parsed wrongly:** the first line of the report shows the date range. The date
+  order is read from the whole column: a day above 12 settles it, and otherwise dotted
+  or dashed dates (`03.04.2026`) are read day first and slashed ones (`03/04/2026`) month
+  first. Convert the column to ISO dates (`2026-04-03`) if in doubt.
 - **Too few items:** statistics need volume. Below roughly 300 items or 8 weeks of
   history, early warnings will rarely be significant; theme discovery still works.

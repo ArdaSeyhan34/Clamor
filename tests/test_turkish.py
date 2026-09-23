@@ -109,10 +109,12 @@ def test_combine_exports_keeps_channels_and_unique_ids(tmp_path):
         "Oluşturma Tarihi": ["02.03.2026 09:00", "03.03.2026 09:00"],
         "Açıklama": ["SMS kodu gelmiyor", "Bakiye yüklenmedi"],
     }).to_csv(tmp_path / "tickets.csv", index=False, sep=";", encoding="cp1254")  # fmt: skip
-    fb = combine_feedback([tmp_path / "reviews.csv", tmp_path / "tickets.csv"])
-    assert fb["channel"].tolist() == ["reviews", "tickets", "tickets"]
+    (tmp_path / "reviews_202603.csv").write_bytes((tmp_path / "reviews.csv").read_bytes())
+    files = ["reviews.csv", "tickets.csv", "reviews_202603.csv"]
+    fb = combine_feedback([tmp_path / f for f in files])
+    assert fb["channel"].tolist() == ["reviews", "reviews", "tickets", "tickets"]
     assert fb["feedback_id"].is_unique and fb["account_id"].is_unique
-    assert fb["feedback_id"].iloc[0] == "reviews:FB-00001"
+    assert set(fb["feedback_id"]) >= {"reviews:FB-00001", "reviews_202603:FB-00001"}
 
 
 @pytest.fixture(scope="module")

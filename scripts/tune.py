@@ -48,6 +48,20 @@ class CachingEmbedder:
         return np.vstack([self.cache[t] for t in texts])
 
 
+class LowercasingEmbedder:
+    """Experiment: lower-case (language-aware) before a cased semantic model."""
+
+    def __init__(self, inner, lower):
+        self.inner, self.lower, self.name = inner, lower, inner.name
+
+    def fit(self, texts):
+        self.inner.fit([self.lower(t) for t in texts])
+        return self
+
+    def encode(self, texts):
+        return self.inner.encode([self.lower(t) for t in texts])
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scenario", default="lezzo")
@@ -55,6 +69,7 @@ def main() -> None:
     ap.add_argument("--distances", default="0.5,0.55,0.6,0.65,0.7")
     ap.add_argument("--boilerplate", default="0.5,0.55,0.6,0.65")
     ap.add_argument("--semantic-weights", default="0.8", help="hybrid only, e.g. 0.5,0.65,0.8")
+    ap.add_argument("--lowercase", action="store_true", help="lower-case before embedding")
     args = ap.parse_args()
 
     settings = SCENARIO_SETTINGS[args.scenario]
@@ -64,16 +79,23 @@ def main() -> None:
     lang = get_language(settings["language"])
     backend = args.backend or lang.default_embedding
     if backend == "hybrid":  # the semantic part is cached once, the weight varies
-        semantic = CachingEmbedder(
-            OnnxSentenceEmbedder("minilm" if lang.code == "en" else "multilingual")
-        )
+        semantic = OnnxSentenceEmbedder("minilm" if lang.code == "en" else "multilingual")
+        if args.lowercase:
+            semantic = LowercasingEmbedder(semantic, lang.lower)
+        semantic = CachingEmbedder(semantic)
         embedders = {
             w: HybridEmbedder(semantic, TfidfEmbedder(lang=lang), semantic_weight=w)
             for w in map(float, args.semantic_weights.split(","))
         }
     else:
-        embedders = {"-": CachingEmbedder(get_embedder(backend, fallback=False, lang=lang))}
-    print(f"scenario={args.scenario} backend={backend} items={len(ds.feedback)}")
+        inner = get_embedder(backend, fallback=False, lang=lang)
+        if args.lowercase:
+            inner = LowercasingEmbedder(inner, lang.lower)
+        embedders = {"-": CachingEmbedder(inner)}
+    print(
+        f"scenario={args.scenario} backend={backend} lowercase={args.lowercase} "
+        f"items={len(ds.feedback)}"
+    )
     print(
         "| semantic weight | distance | boilerplate | themes | ARI | homogeneity | recovered | "
         "releases | spikes | false alarms | spurious | seconds |"

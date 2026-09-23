@@ -175,8 +175,9 @@ def combine_feedback(
 ) -> pd.DataFrame:
     """Load several exports (say, app-store reviews and support tickets) into one table.
 
-    A file without a channel column is labelled with its name, and IDs are prefixed with
-    it so they stay unique across files.
+    A file without a channel column is labelled with its name minus a trailing date, so
+    monthly exports (``reviews_202601.csv``, ``reviews_202602.csv``) form one channel. IDs
+    are prefixed with the file name so they stay unique across files.
     """
     frames = []
     for i, source in enumerate(sources):
@@ -189,7 +190,7 @@ def combine_feedback(
         df = load_feedback(source)
         own_account = (df["account_id"] == df["feedback_id"].astype(str)).all()
         if (df["channel"] == "unknown").all():
-            df["channel"] = name
+            df["channel"] = re.sub(r"[_\-. ]*\d{4,8}$", "", name) or name
         df["feedback_id"] = name + ":" + df["feedback_id"].astype(str)
         if own_account:  # no customer IDs in this file: every item is its own "account"
             df["account_id"] = df["feedback_id"]
