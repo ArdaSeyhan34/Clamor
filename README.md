@@ -18,8 +18,11 @@ notes and answers the questions a product team actually has:
 4. **Did what we shipped actually work?** Every release is checked against what
    customers said before and after it.
 
-An optional **Claude** layer names the themes the way a PM would and drafts a one-page
-opportunity brief for any of them.
+It works in **English and Turkish**, reads raw exports from the Google Play Console and
+helpdesk tools as they are, and masks personal data (phone numbers, e-mails, card
+numbers, IBANs, national IDs) before anything is analyzed. An optional **Claude** layer
+names the themes the way a PM would and drafts a one-page opportunity brief for any of
+them.
 
 ![Clamor dashboard](docs/images/dashboard-roadmap.png)
 
@@ -89,6 +92,7 @@ git clone https://github.com/ArdaSeyhan34/clamor.git && cd clamor
 pip install -e ".[all]"          # Python 3.10+
 
 clamor demo                      # analyze the demo data, evaluate it, write reports/demo/
+clamor demo --scenario lezzo     # the Turkish consumer-app demo, written to reports/demo_lezzo/
 streamlit run app/streamlit_app.py
 ```
 
@@ -111,6 +115,9 @@ in [`reports/demo/report.md`](reports/demo/report.md), with example
 ```bash
 clamor analyze feedback.csv --accounts accounts.csv --releases releases.csv \
                --product-name "YourProduct" --preset balanced --out reports/mine
+
+# several exports at once, in Turkish, without revenue data
+clamor analyze play_reviews.csv tickets.csv --releases releases.csv --language tr
 ```
 
 | File | Required columns | Optional columns |
@@ -119,10 +126,15 @@ clamor analyze feedback.csv --accounts accounts.csv --releases releases.csv \
 | `accounts` | `account_id`, `mrr` | `plan`, `seats`, `company` |
 | `releases` | `date`, `title` | `version`, `description` |
 
-Common export column names (`body`, `comment`, `review`, `timestamp`, `customer_id`, ...)
-are recognized automatically. Without `accounts`, ranking uses reach, severity and
-momentum only; without `releases`, the release radar is skipped. The dashboard's *Upload
-your own* mode does the same without the command line.
+Common export column names (`body`, `comment`, `review`, `timestamp`, `customer_id`, and
+Turkish ones such as `Yorum`, `Açıklama`, `Tarih`, `Puan`) are recognized automatically,
+as are UTF-16 Play Console files and semicolon-separated Excel exports. Without
+`accounts`, ranking uses reach, severity and momentum only; without `releases`, the
+release radar is skipped. The dashboard's *Upload your own* mode does the same without the
+command line.
+
+Working with real customer data? [docs/real-data.md](docs/real-data.md) covers exports,
+keeping data out of git, privacy and a first-run checklist.
 
 ### Python API
 
@@ -203,11 +215,15 @@ the tests use a fake client, so CI never needs a key.
 
 ```
 clamor/
-  synth.py        simulator for the demo company, with ground truth
+  synth.py        simulator for the English demo company, with ground truth
+  synth_lezzo.py  simulator for the Turkish consumer-app demo
+  lang.py         language packs: boilerplate, stop words, sentiment lexicon, cues
+  privacy.py      masking of phone numbers, e-mails, cards, IBANs, national IDs
+  io.py           loaders for raw exports (encodings, delimiters, column names)
   text.py         sentence segmentation and boilerplate detection
-  embeddings.py   MiniLM (ONNX), TF-IDF and hybrid backends
+  embeddings.py   MiniLM and multilingual MiniLM (ONNX), TF-IDF and hybrid backends
   themes.py       clustering, consolidation, keywords, theme types
-  sentiment.py    domain lexicon sentiment, blended with star/NPS ratings
+  sentiment.py    lexicon sentiment, blended with star/NPS ratings
   stats.py        exact rate test, median-of-ratios, Benjamini-Hochberg
   trends.py       early-warning statuses
   impact.py       release radar
@@ -220,8 +236,9 @@ clamor/
   cli.py          `clamor` command
 app/streamlit_app.py   interactive dashboard
 scripts/ablation.py    ablation study
-tests/                 39 tests, run offline
-docs/                  methodology and a PM case study
+scripts/tune.py        threshold grid search per backend and scenario
+tests/                 57 tests, run offline
+docs/                  methodology, a PM case study, a guide for real data
 ```
 
 ## Documentation
@@ -230,6 +247,7 @@ docs/                  methodology and a PM case study
   experiments behind it.
 - [Case study](docs/case-study.md): the demo data read the way a product manager would,
   ending in a quarter's recommendations.
+- [Running on real data](docs/real-data.md): exports, privacy and a first-run checklist.
 
 ## Limitations and next steps
 

@@ -35,7 +35,7 @@ PRESETS: dict[str, Weights] = {
 BACKEND_DEFAULTS: dict[str, dict[str, float]] = {
     "hybrid": {"distance_threshold": 0.70, "boilerplate_threshold": 0.55},
     "minilm": {"distance_threshold": 0.65, "boilerplate_threshold": 0.60},
-    "multilingual": {"distance_threshold": 0.60, "boilerplate_threshold": 0.60},
+    "multilingual": {"distance_threshold": 0.60, "boilerplate_threshold": 0.55},
     "tfidf": {"distance_threshold": 0.90, "boilerplate_threshold": 0.50},
     "st": {"distance_threshold": 0.65, "boilerplate_threshold": 0.60},
 }

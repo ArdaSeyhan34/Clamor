@@ -28,8 +28,16 @@ jobs:
         run: pytest
 
   demo:
-    # end-to-end run with the real MiniLM model, checks the published accuracy still holds
+    # end-to-end run with the real embedding model, checks the published accuracy still holds
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scenario: tempo  # English, MiniLM
+            min_ari: 0.7
+          - scenario: lezzo  # Turkish, multilingual MiniLM
+            min_ari: 0.45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,15 +47,18 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/clamor
-          key: minilm-onnx-v1
+          key: onnx-models-${{ matrix.scenario }}-v1
       - run: pip install -e .
-      - run: clamor demo --no-llm --out /tmp/demo | tee demo.log
+      - run: clamor demo --scenario ${{ matrix.scenario }} --no-llm --out /tmp/demo 2>&1 | tee demo.log
       - name: Accuracy guard
+        env:
+          MIN_ARI: ${{ matrix.min_ari }}
         run: |
           python - <<'PY'
-          import re
+          import os, re
           log = open("demo.log").read()
+          assert "falling back" not in log, "the embedding model could not be loaded"
           ari = float(re.search(r"ARI ([0-9.]+)", log).group(1))
-          assert ari > 0.7, f"theme discovery regressed: ARI {ari}"
+          assert ari > float(os.environ["MIN_ARI"]), f"theme discovery regressed: ARI {ari}"
           print("ARI", ari)
           PY

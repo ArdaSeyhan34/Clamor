@@ -13,6 +13,7 @@ import typer
 from . import llm, synth
 from .config import PRESETS, Config
 from .insights import headline_insights
+from .io import combine_feedback
 from .pipeline import Analysis, analyze, review_with_claude
 from .report import write_report
 
@@ -106,7 +107,9 @@ def generate(
 
 @app.command("analyze")
 def analyze_cmd(
-    feedback: Path = typer.Argument(..., help="CSV/JSON/Excel with at least text and a date."),
+    feedback: list[Path] = typer.Argument(
+        ..., help="One or more CSV/JSON/Excel exports, each with at least text and a date."
+    ),
     accounts: Path | None = typer.Option(None, help="Accounts with account_id and mrr."),
     releases: Path | None = typer.Option(None, help="Changelog with date and title."),
     out: Path = typer.Option(Path("reports/latest"), help="Output directory."),
@@ -114,6 +117,9 @@ def analyze_cmd(
     as_of: str | None = typer.Option(None, help="Analyze as if today were this date."),
     backend: str | None = typer.Option(
         None, help="minilm | multilingual | hybrid | tfidf | st:<model> (default: per language)"
+    ),
+    threshold: float | None = typer.Option(
+        None, help="Clustering distance threshold: higher gives fewer, broader themes."
     ),
     preset: str = typer.Option("balanced", help=f"Weight preset: {', '.join(PRESETS)}"),
     product_name: list[str] = typer.Option([], help="Product name(s) to ignore in text."),
@@ -133,12 +139,14 @@ def analyze_cmd(
     config = Config(
         language=language,
         embedding=backend,
+        distance_threshold=threshold,
         product_names=tuple(product_name),
         weights=PRESETS[preset],
         redact_pii=redact,
     )
     start = time.time()
-    result = analyze(feedback, accounts, releases, config=config, as_of=as_of)
+    source = feedback[0] if len(feedback) == 1 else combine_feedback(feedback)
+    result = analyze(source, accounts, releases, config=config, as_of=as_of)
     result = _maybe_review(result, use_llm)
     _print_summary(result, time.time() - start)
     paths = write_report(result, out, n_briefs=briefs, use_llm=use_llm)

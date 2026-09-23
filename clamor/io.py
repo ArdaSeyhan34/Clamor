@@ -99,7 +99,8 @@ def _read_csv(path: Path) -> pd.DataFrame:
     raise SchemaError(f"could not decode {path.name}: {last_error}")
 
 
-def _read(source: str | Path | pd.DataFrame) -> pd.DataFrame:
+def read_table(source: str | Path | pd.DataFrame) -> pd.DataFrame:
+    """Read a CSV (any common encoding or delimiter), Excel or JSON file into a DataFrame."""
     if isinstance(source, pd.DataFrame):
         return source.copy()
     path = Path(source)
@@ -110,19 +111,30 @@ def _read(source: str | Path | pd.DataFrame) -> pd.DataFrame:
     return _read_csv(path)
 
 
-_DAY_FIRST = re.compile(r"^\s*\d{1,2}[./]\d{1,2}[./]\d{2,4}")
+_NUMERIC_DATE = re.compile(r"^\s*(\d{1,2})([./-])(\d{1,2})\2\d{2,4}")
+
+
+def _day_first(values: pd.Series) -> bool:
+    """Whether dates such as 03/04/2026 are day first, decided from the whole column."""
+    parts = values.dropna().astype(str).str.extract(_NUMERIC_DATE)
+    if parts.empty or parts[0].notna().mean() <= 0.5:
+        return False  # ISO dates or text: no ambiguity
+    first, second = pd.to_numeric(parts[0]), pd.to_numeric(parts[2])
+    if (first > 12).any():
+        return True  # 14.03.2026
+    if (second > 12).any():
+        return False  # 03/14/2026
+    return (parts[1] != "/").mean() > 0.5  # dotted or dashed dates are day first (TR, EU)
 
 
 def _parse_dates(values: pd.Series) -> pd.Series:
     """Parse timestamps; '12.03.2026' is read as 12 March, as in Turkish exports."""
-    sample = values.dropna().astype(str).head(200)
-    day_first = len(sample) > 0 and sample.str.match(_DAY_FIRST).mean() > 0.5
-    parsed = pd.to_datetime(values, errors="coerce", utc=True, dayfirst=bool(day_first))
+    parsed = pd.to_datetime(values, errors="coerce", utc=True, dayfirst=_day_first(values))
     return parsed.dt.tz_localize(None)
 
 
 def load_feedback(source: str | Path | pd.DataFrame) -> pd.DataFrame:
-    raw = _read(source)
+    raw = read_table(source)
     df = _rename(raw, FEEDBACK_FIELDS)
     missing = {"text", "created_at"} - set(df.columns)
     if missing:
@@ -158,10 +170,38 @@ def load_feedback(source: str | Path | pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def combine_feedback(
+    sources: list[str | Path | pd.DataFrame], names: list[str] | None = None
+) -> pd.DataFrame:
+    """Load several exports (say, app-store reviews and support tickets) into one table.
+
+    A file without a channel column is labelled with its name, and IDs are prefixed with
+    it so they stay unique across files.
+    """
+    frames = []
+    for i, source in enumerate(sources):
+        if names:
+            name = names[i]
+        elif isinstance(source, pd.DataFrame):
+            name = f"source{i + 1}"
+        else:
+            name = Path(source).stem
+        df = load_feedback(source)
+        own_account = (df["account_id"] == df["feedback_id"].astype(str)).all()
+        if (df["channel"] == "unknown").all():
+            df["channel"] = name
+        df["feedback_id"] = name + ":" + df["feedback_id"].astype(str)
+        if own_account:  # no customer IDs in this file: every item is its own "account"
+            df["account_id"] = df["feedback_id"]
+        frames.append(df)
+    df = pd.concat(frames, ignore_index=True)
+    return df.sort_values("created_at", kind="stable").reset_index(drop=True)
+
+
 def load_accounts(source: str | Path | pd.DataFrame | None) -> pd.DataFrame | None:
     if source is None:
         return None
-    df = _rename(_read(source), ["account_id", "mrr"])
+    df = _rename(read_table(source), ["account_id", "mrr"])
     missing = {"account_id", "mrr"} - set(df.columns)
     if missing:
         raise SchemaError(f"accounts is missing required column(s) {sorted(missing)}")
@@ -175,7 +215,7 @@ def load_accounts(source: str | Path | pd.DataFrame | None) -> pd.DataFrame | No
 def load_releases(source: str | Path | pd.DataFrame | None) -> pd.DataFrame | None:
     if source is None:
         return None
-    df = _rename(_read(source), ["date", "title", "description"])
+    df = _rename(read_table(source), ["date", "title", "description"])
     missing = {"date", "title"} - set(df.columns)
     if missing:
         raise SchemaError(f"releases is missing required column(s) {sorted(missing)}")

@@ -40,6 +40,7 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
     if road.empty:
         return out
     window = analysis.config.score_window_days
+    who = "accounts" if analysis.has_revenue else "users"  # no revenue: end-user feedback
 
     top = road.iloc[0]
     drivers = {
@@ -54,7 +55,7 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
             "priority",
             f"Top priority: {_name(top)}",
             f"Score {top['score']:.0f}/100, driven mostly by {main[0]} and {main[1]}: "
-            f"{int(top['mentions'])} mentions from {int(top['accounts'])} accounts in the last "
+            f"{int(top['mentions'])} mentions from {int(top['accounts'])} {who} in the last "
             f"{window} days.",
         )
     )
@@ -73,16 +74,23 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
 
     loud = road[road["rank_shift"] < 0].sort_values("rank_shift").head(1)
     for _, r in loud.iterrows():
-        plan, share = _top_plan(r["plan_mix"])
-        extra = (
-            f" {share:.0%} of its mentions come from {plan} accounts."
-            if analysis.has_revenue
-            else ""
-        )
+        if analysis.has_revenue:
+            plan, share = _top_plan(r["plan_mix"])
+            title = f"Loud, but not the most valuable: {_name(r)}"
+            extra = f" {share:.0%} of its mentions come from {plan} accounts."
+        else:
+            title = f"Frequently mentioned, but lower priority: {_name(r)}"
+            w = analysis.config.weights
+            gaps = {
+                "fewer distinct users": w.reach * (top["c_reach"] - r["c_reach"]),
+                "milder sentiment": w.severity * (top["c_severity"] - r["c_severity"]),
+                "no significant growth": w.momentum * (top["c_momentum"] - r["c_momentum"]),
+            }
+            extra = f" It ranks lower mainly because of {max(gaps, key=gaps.get)}."
         out.append(
             Insight(
                 "loud",
-                f"Loud, but not the most valuable: {_name(r)}",
+                title,
                 f"#{int(r['vote_rank'])} by raw mention count, "
                 f"#{int(r['rank'])} by priority.{extra}",
             )

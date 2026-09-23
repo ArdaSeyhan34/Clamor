@@ -1,6 +1,6 @@
-name: Publish demo report
+name: Publish demo reports
 
-# Builds the demo report and publishes it with GitHub Pages.
+# Builds the demo reports (English and Turkish) and publishes them with GitHub Pages.
 # One-time setup: Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
 # Until then the workflow skips the deploy instead of failing.
 on:
@@ -47,10 +47,13 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/clamor
-          key: minilm-onnx-v1
+          key: onnx-models-pages-v1
       - run: pip install -e .
       - run: clamor demo --no-llm --out site
-      - run: cp site/report.html site/index.html
+      - run: clamor demo --scenario lezzo --no-llm --out site/lezzo
+      - run: |
+          cp site/report.html site/index.html
+          cp site/lezzo/report.html site/lezzo/index.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

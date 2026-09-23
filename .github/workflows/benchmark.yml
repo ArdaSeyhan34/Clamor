@@ -1,21 +1,31 @@
 name: Benchmark
 
-# Measures theme discovery and alerting against the ground truth of a demo scenario and
-# grid-searches the clustering thresholds. Run it from the Actions tab.
+# Measures theme discovery and alerting against the ground truth of a demo scenario and,
+# optionally, grid-searches the clustering thresholds. Run it from the Actions tab.
 on:
   workflow_dispatch:
     inputs:
       scenario:
         description: "Demo scenario (tempo or lezzo)"
         default: "lezzo"
-  push:
-    branches: ["claude/**"]
+      grid:
+        description: "Grid-search the clustering thresholds (10-20 minutes)"
+        type: boolean
+        default: true
+      backend:
+        description: "Embedding backend to tune (empty: the scenario language's default)"
+        default: ""
+      tune_args:
+        description: "Extra arguments for scripts/tune.py, e.g. --distances 0.6,0.7"
+        default: ""
 
 jobs:
   benchmark:
     runs-on: ubuntu-latest
     env:
-      SCENARIO: ${{ inputs.scenario || 'lezzo' }}
+      SCENARIO: ${{ inputs.scenario }}
+      BACKEND: ${{ inputs.backend }}
+      TUNE_ARGS: ${{ inputs.tune_args }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,12 +35,21 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: ~/.cache/clamor
-          key: onnx-models-v2
+          key: onnx-models-${{ inputs.scenario }}-v1
       - run: pip install -e .
       - name: Grid search
-        run: python scripts/tune.py --scenario "$SCENARIO" | tee -a "$GITHUB_STEP_SUMMARY"
+        if: inputs.grid
+        run: |
+          python scripts/tune.py --scenario "$SCENARIO" ${BACKEND:+--backend "$BACKEND"} $TUNE_ARGS \
+            | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Demo report
         run: |
-          clamor demo --scenario "$SCENARIO" --no-llm --out /tmp/report
-          cat /tmp/report/report.md >> "$GITHUB_STEP_SUMMARY"
-          cat /tmp/report/report.md
+          clamor demo --scenario "$SCENARIO" ${BACKEND:+--backend "$BACKEND"} --no-llm --out report
+          cat report/report.md >> "$GITHUB_STEP_SUMMARY"
+          for f in report/report.md report/briefs/*.md; do
+            echo "::group::$f"; cat "$f"; echo "::endgroup::"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-${{ inputs.scenario }}
+          path: report

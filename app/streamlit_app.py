@@ -21,8 +21,16 @@ from clamor.config import PRESETS, Config, Weights  # noqa: E402
 from clamor.embeddings import get_embedder  # noqa: E402
 from clamor.evaluate import evaluate_all  # noqa: E402
 from clamor.insights import headline_insights  # noqa: E402
-from clamor.io import load_accounts, load_feedback, load_releases  # noqa: E402
+from clamor.io import (  # noqa: E402
+    combine_feedback,
+    load_accounts,
+    load_feedback,
+    load_releases,
+    read_table,
+)
+from clamor.lang import get_language  # noqa: E402
 from clamor.pipeline import analyze, build_theme_model, merge_themes  # noqa: E402
+from clamor.privacy import redact  # noqa: E402
 from clamor.report import STATUS_ICON, release_table, roadmap_table  # noqa: E402
 from clamor.scoring import contributions  # noqa: E402
 from clamor.sentiment import score_feedback  # noqa: E402
@@ -36,28 +44,59 @@ except Exception:  # no secrets file locally
     pass
 
 MODE = "dark" if getattr(getattr(st.context, "theme", None), "type", "light") == "dark" else "light"
-DEMO_DIR = ROOT / "data" / "demo"
+DEMOS = {  # label -> (scenario, data folder, language, product names)
+    "Demo: Tempo (English B2B SaaS)": ("tempo", ROOT / "data" / "demo", "en", ("Tempo",)),
+    "Demo: Lezzo (Turkish meal-card app)": (
+        "lezzo",
+        ROOT / "data" / "demo_lezzo",
+        "tr",
+        ("Lezzo",),
+    ),
+}
+LANGUAGES = {"English": "en", "Türkçe": "tr"}
 
 
 # --------------------------------------------------------------------------- data & models
 @st.cache_data(show_spinner=False)
-def load_demo() -> dict:
-    if not (DEMO_DIR / "feedback.csv").exists():
-        synth.generate().save(DEMO_DIR)
-    ds = synth.SyntheticDataset.load(DEMO_DIR)
+def load_demo(scenario: str, folder: str) -> dict:
+    folder = Path(folder)
+    if not (folder / "feedback.csv").exists():
+        synth.generate_scenario(scenario).save(folder)
+    ds = synth.SyntheticDataset.load(folder)
     return {name: getattr(ds, name) for name in ds.FILES}
 
 
+def read_upload(upload) -> pd.DataFrame | None:
+    """Read an uploaded export with Clamor's loader (encoding, delimiter, Excel)."""
+    if upload is None:
+        return None
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(suffix=Path(upload.name).suffix) as tmp:
+        tmp.write(upload.getvalue())
+        tmp.flush()
+        return read_table(tmp.name)
+
+
 @st.cache_resource(show_spinner=False)
-def embedder_for(backend: str):
-    return get_embedder(backend)
+def embedder_for(backend: str, language: str):
+    return get_embedder(backend, lang=get_language(language))
 
 
 @st.cache_resource(show_spinner="Discovering themes (embedding and clustering)...")
-def theme_model(data_key: str, _feedback: pd.DataFrame, backend: str, product: tuple[str, ...]):
+def theme_model(
+    data_key: str, _feedback: pd.DataFrame, backend: str, language: str, product: tuple[str, ...]
+):
     fb = load_feedback(_feedback)
-    cfg = Config(embedding=backend, product_names=product)
-    return build_theme_model(fb, cfg, embedder=embedder_for(backend), sentiment=score_feedback(fb))
+    cfg = Config(language=language, embedding=backend, product_names=product)
+    if cfg.redact_pii:
+        fb["text"] = fb["text"].map(redact)
+    return build_theme_model(
+        fb,
+        cfg,
+        embedder=embedder_for(backend, language),
+        sentiment=score_feedback(fb, lang=get_language(language)),
+    )
 
 
 @st.cache_resource(show_spinner="Claude is reviewing the themes...")
@@ -89,39 +128,53 @@ def frame_key(*frames: pd.DataFrame | None) -> str:
 st.sidebar.title("\U0001f4e3 Clamor")
 st.sidebar.caption("Customer feedback → prioritized, evidence-backed roadmap")
 
-source = st.sidebar.radio(
-    "Data", ["Demo: Tempo (synthetic SaaS)", "Upload your own"], label_visibility="collapsed"
-)
+source = st.sidebar.radio("Data", [*DEMOS, "Upload your own"], label_visibility="collapsed")
 dataset = None
-if source.startswith("Demo"):
-    dataset = load_demo()
+if source in DEMOS:
+    scenario, folder, language, product_names = DEMOS[source]
+    dataset = load_demo(scenario, str(folder))
     feedback_raw, accounts_raw, releases_raw = (
         dataset["feedback"],
         dataset["accounts"],
         dataset["releases"],
     )
-    product_names: tuple[str, ...] = ("Tempo",)
 else:
-    up_fb = st.sidebar.file_uploader("Feedback CSV (text + date required)", type="csv")
-    up_acc = st.sidebar.file_uploader("Accounts CSV (account_id + mrr, optional)", type="csv")
-    up_rel = st.sidebar.file_uploader("Releases CSV (date + title, optional)", type="csv")
+    kinds = ["csv", "xlsx", "json"]
+    up_fb = st.sidebar.file_uploader(
+        "Feedback: one or more exports (text + date required)",
+        type=kinds,
+        accept_multiple_files=True,
+    )
+    up_acc = st.sidebar.file_uploader("Accounts (account_id + mrr, optional)", type=kinds)
+    up_rel = st.sidebar.file_uploader("Releases (date + title, optional)", type=kinds)
+    language = LANGUAGES[st.sidebar.selectbox("Language of the feedback", list(LANGUAGES))]
     names = st.sidebar.text_input("Product name(s) to ignore, comma separated", "")
     product_names = tuple(n.strip() for n in names.split(",") if n.strip())
-    if up_fb is None:
+    if not up_fb:
         st.title("Bring your own feedback")
         st.markdown(
             "Upload a CSV export from your support tool, app store reviews or NPS survey. "
             "Only a **text** column and a **date** column are required; common names such as "
-            "`body`, `comment`, `review`, `created`, `timestamp` are recognized automatically."
+            "`body`, `comment`, `review`, `created`, `timestamp` (and Turkish ones such as "
+            "`Yorum`, `Açıklama`, `Tarih`, `Puan`) are recognized automatically, as are Google "
+            "Play Console exports. Several files (say, store reviews and support tickets) are "
+            "combined, each keeping its own channel. Phone numbers, e-mails, card numbers, "
+            "IBANs and national ID numbers are masked before anything is analyzed."
             "\n\nAdd an **accounts** file (`account_id`, `mrr`, `plan`) to weigh themes by "
             "revenue, and a **releases** file (`date`, `title`, `description`) to get the "
-            "release radar. Nothing leaves your browser session except, if you enable it, "
-            "theme summaries sent to Claude."
+            "release radar.\n\nFiles are processed in memory by the server running this app "
+            "and are not stored. For confidential data, run the app on your own machine: "
+            "then nothing leaves it except, if you enable it, theme summaries sent to Claude."
         )
         st.stop()
-    feedback_raw = pd.read_csv(up_fb)
-    accounts_raw = pd.read_csv(up_acc) if up_acc else None
-    releases_raw = pd.read_csv(up_rel) if up_rel else None
+    frames = [read_upload(f) for f in up_fb]
+    feedback_raw = (
+        frames[0]
+        if len(frames) == 1
+        else combine_feedback(frames, names=[Path(f.name).stem for f in up_fb])
+    )
+    accounts_raw = read_upload(up_acc)
+    releases_raw = read_upload(up_rel)
 
 try:
     fb_valid = load_feedback(feedback_raw)
@@ -159,11 +212,12 @@ with st.sidebar.expander("Fine-tune weights"):
     )
 
 with st.sidebar.expander("Model"):
+    semantic = get_language(language).default_embedding
     backend = st.selectbox(
         "Embedding backend",
-        ["minilm", "hybrid", "tfidf"],
-        help="minilm = semantic sentence embeddings (default); hybrid adds TF-IDF "
-        "vocabulary; tfidf needs no model download.",
+        [semantic, "hybrid", "tfidf"],
+        help=f"{semantic} = semantic sentence embeddings (default for this language); "
+        "hybrid adds TF-IDF vocabulary; tfidf needs no model download.",
     )
     use_claude = st.toggle(
         "Review themes with Claude",
@@ -175,9 +229,9 @@ with st.sidebar.expander("Model"):
         st.caption("Set `ANTHROPIC_API_KEY` to enable the Claude analyst layer.")
 
 # --------------------------------------------------------------------------- analysis
-data_key = frame_key(feedback_raw) + backend + ",".join(product_names)
-model = theme_model(data_key, feedback_raw, backend, product_names)
-config = Config(embedding=backend, product_names=product_names, weights=weights)
+data_key = frame_key(feedback_raw) + backend + language + ",".join(product_names)
+model = theme_model(data_key, feedback_raw, backend, language, product_names)
+config = Config(language=language, embedding=backend, product_names=product_names, weights=weights)
 if use_claude:
     try:
         first = analyze(feedback_raw, accounts_raw, releases_raw, config=config, model=model)

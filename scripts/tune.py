@@ -4,6 +4,7 @@ Embeddings are computed once and cached, so each grid point only re-runs cluster
 evaluation. Used to choose the per-backend defaults in clamor/config.py.
 
     python scripts/tune.py --scenario lezzo --backend multilingual
+    python scripts/tune.py --scenario lezzo --backend hybrid --semantic-weights 0.5,0.65,0.8
 """
 
 from __future__ import annotations
@@ -20,7 +21,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from clamor import synth  # noqa: E402
 from clamor.cli import SCENARIO_SETTINGS  # noqa: E402
 from clamor.config import Config  # noqa: E402
-from clamor.embeddings import get_embedder  # noqa: E402
+from clamor.embeddings import (  # noqa: E402
+    HybridEmbedder,
+    OnnxSentenceEmbedder,
+    TfidfEmbedder,
+    get_embedder,
+)
 from clamor.evaluate import evaluate_all  # noqa: E402
 from clamor.lang import get_language  # noqa: E402
 from clamor.pipeline import analyze  # noqa: E402
@@ -48,6 +54,7 @@ def main() -> None:
     ap.add_argument("--backend", default=None)
     ap.add_argument("--distances", default="0.5,0.55,0.6,0.65,0.7")
     ap.add_argument("--boilerplate", default="0.5,0.55,0.6,0.65")
+    ap.add_argument("--semantic-weights", default="0.8", help="hybrid only, e.g. 0.5,0.65,0.8")
     args = ap.parse_args()
 
     settings = SCENARIO_SETTINGS[args.scenario]
@@ -56,31 +63,46 @@ def main() -> None:
           else synth.generate_scenario(args.scenario))  # fmt: skip
     lang = get_language(settings["language"])
     backend = args.backend or lang.default_embedding
-    embedder = CachingEmbedder(get_embedder(backend, fallback=False, lang=lang))
+    if backend == "hybrid":  # the semantic part is cached once, the weight varies
+        semantic = CachingEmbedder(
+            OnnxSentenceEmbedder("minilm" if lang.code == "en" else "multilingual")
+        )
+        embedders = {
+            w: HybridEmbedder(semantic, TfidfEmbedder(lang=lang), semantic_weight=w)
+            for w in map(float, args.semantic_weights.split(","))
+        }
+    else:
+        embedders = {"-": CachingEmbedder(get_embedder(backend, fallback=False, lang=lang))}
     print(f"scenario={args.scenario} backend={backend} items={len(ds.feedback)}")
     print(
-        "| distance | boilerplate | themes | ARI | homogeneity | recovered | releases | "
-        "spikes | false alarms | spurious | seconds |"
+        "| semantic weight | distance | boilerplate | themes | ARI | homogeneity | recovered | "
+        "releases | spikes | false alarms | spurious | seconds |"
     )
-    print("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
-    for b in map(float, args.boilerplate.split(",")):
-        for d in map(float, args.distances.split(",")):
-            start = time.time()
-            cfg = Config(language=lang.code, embedding=backend,
-                         product_names=settings["products"], distance_threshold=d,
-                         boilerplate_threshold=b)  # fmt: skip
-            result = analyze(ds.feedback, ds.accounts, ds.releases, config=cfg,
-                             embedder=embedder)  # fmt: skip
-            ev = evaluate_all(result, ds)
-            t, a, rel = ev["themes"], ev["alerts"]["clamor"], ev["releases"]
-            print(
-                f"| {d} | {b} | {t['themes_found']} | {t['adjusted_rand']:.3f} | "
-                f"{t['homogeneity']:.3f} | {t['mean_recovered_share']:.0%} | "
-                f"{int(rel['correct'].sum())}/{len(rel)} | {a['spikes_detected']}/"
-                f"{a['spikes_total']} | {a['false_alarm_episodes']} | "
-                f"{a['spurious_trend_days']} | {time.time() - start:.0f} |",
-                flush=True,
-            )
+    print("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|")
+    grid = [
+        (w, b, d)
+        for w in embedders
+        for b in map(float, args.boilerplate.split(","))
+        for d in map(float, args.distances.split(","))
+    ]
+    for w, b, d in grid:
+        embedder = embedders[w]
+        start = time.time()
+        cfg = Config(language=lang.code, embedding=backend,
+                     product_names=settings["products"], distance_threshold=d,
+                     boilerplate_threshold=b)  # fmt: skip
+        result = analyze(ds.feedback, ds.accounts, ds.releases, config=cfg,
+                         embedder=embedder)  # fmt: skip
+        ev = evaluate_all(result, ds)
+        t, a, rel = ev["themes"], ev["alerts"]["clamor"], ev["releases"]
+        print(
+            f"| {w} | {d} | {b} | {t['themes_found']} | {t['adjusted_rand']:.3f} | "
+            f"{t['homogeneity']:.3f} | {t['mean_recovered_share']:.0%} | "
+            f"{int(rel['correct'].sum())}/{len(rel)} | {a['spikes_detected']}/"
+            f"{a['spikes_total']} | {a['false_alarm_episodes']} | "
+            f"{a['spurious_trend_days']} | {time.time() - start:.0f} |",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

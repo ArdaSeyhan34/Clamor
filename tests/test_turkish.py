@@ -6,7 +6,7 @@ import pytest
 from clamor import synth
 from clamor.config import Config
 from clamor.evaluate import evaluate_all
-from clamor.io import load_feedback, load_releases
+from clamor.io import combine_feedback, load_feedback, load_releases
 from clamor.lang import TURKISH, fold, tr_lower
 from clamor.pipeline import analyze
 from clamor.privacy import redact, tckn_valid
@@ -84,6 +84,35 @@ def test_turkish_excel_export(tmp_path):
     rel = pd.DataFrame({"Yayın Tarihi": ["10.03.2026"], "Başlık": ["v5.1"]})
     rel.to_csv(tmp_path / "rel.csv", index=False, sep=";")
     assert load_releases(tmp_path / "rel.csv").loc[0, "date"] == pd.Timestamp("2026-03-10")
+
+
+@pytest.mark.parametrize(
+    ("values", "expected"),
+    [
+        (["12.03.2026 10:15"], "2026-03-12 10:15"),
+        (["14/03/2026", "02/03/2026"], "2026-03-14"),
+        (["03/14/2026", "03/02/2026"], "2026-03-14"),
+        (["2026-03-14T08:00:00Z"], "2026-03-14 08:00"),
+    ],
+)
+def test_date_order_is_detected(values, expected):
+    fb = load_feedback(pd.DataFrame({"text": ["x"] * len(values), "date": values}))
+    assert fb["created_at"].max() == pd.Timestamp(expected)
+
+
+def test_combine_exports_keeps_channels_and_unique_ids(tmp_path):
+    pd.DataFrame({
+        "Review Submit Date and Time": ["2026-03-01T10:00:00Z"],
+        "Review Text": ["QR çalışmıyor"],
+    }).to_csv(tmp_path / "reviews.csv", index=False, encoding="utf-16")  # fmt: skip
+    pd.DataFrame({
+        "Oluşturma Tarihi": ["02.03.2026 09:00", "03.03.2026 09:00"],
+        "Açıklama": ["SMS kodu gelmiyor", "Bakiye yüklenmedi"],
+    }).to_csv(tmp_path / "tickets.csv", index=False, sep=";", encoding="cp1254")  # fmt: skip
+    fb = combine_feedback([tmp_path / "reviews.csv", tmp_path / "tickets.csv"])
+    assert fb["channel"].tolist() == ["reviews", "tickets", "tickets"]
+    assert fb["feedback_id"].is_unique and fb["account_id"].is_unique
+    assert fb["feedback_id"].iloc[0] == "reviews:FB-00001"
 
 
 @pytest.fixture(scope="module")
