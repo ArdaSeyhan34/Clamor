@@ -22,6 +22,7 @@ from clamor import synth  # noqa: E402
 from clamor.cli import SCENARIO_SETTINGS  # noqa: E402
 from clamor.config import Config  # noqa: E402
 from clamor.embeddings import (  # noqa: E402
+    HYBRID_SEMANTIC_WEIGHT,
     HybridEmbedder,
     OnnxSentenceEmbedder,
     TfidfEmbedder,
@@ -68,7 +69,7 @@ def main() -> None:
     ap.add_argument("--backend", default=None)
     ap.add_argument("--distances", default="0.5,0.55,0.6,0.65,0.7")
     ap.add_argument("--boilerplate", default="0.5,0.55,0.6,0.65")
-    ap.add_argument("--semantic-weights", default="0.8", help="hybrid only, e.g. 0.5,0.65,0.8")
+    ap.add_argument("--semantic-weights", default=None, help="hybrid only, e.g. 0.5,0.65,0.8")
     ap.add_argument("--lowercase", action="store_true", help="lower-case before embedding")
     args = ap.parse_args()
 
@@ -79,13 +80,15 @@ def main() -> None:
     lang = get_language(settings["language"])
     backend = args.backend or lang.default_embedding
     if backend == "hybrid":  # the semantic part is cached once, the weight varies
-        semantic = OnnxSentenceEmbedder("minilm" if lang.code == "en" else "multilingual")
+        model = "minilm" if lang.code == "en" else "multilingual"
+        weights = args.semantic_weights or str(HYBRID_SEMANTIC_WEIGHT[model])
+        semantic = OnnxSentenceEmbedder(model)
         if args.lowercase:
             semantic = LowercasingEmbedder(semantic, lang.lower)
         semantic = CachingEmbedder(semantic)
         embedders = {
             w: HybridEmbedder(semantic, TfidfEmbedder(lang=lang), semantic_weight=w)
-            for w in map(float, args.semantic_weights.split(","))
+            for w in map(float, weights.split(","))
         }
     else:
         inner = get_embedder(backend, fallback=False, lang=lang)

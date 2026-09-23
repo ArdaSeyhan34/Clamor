@@ -212,12 +212,13 @@ with st.sidebar.expander("Fine-tune weights"):
     )
 
 with st.sidebar.expander("Model"):
-    semantic = get_language(language).default_embedding
+    semantic = "minilm" if language == "en" else "multilingual"
+    default = get_language(language).default_embedding
     backend = st.selectbox(
         "Embedding backend",
-        [semantic, "hybrid", "tfidf"],
-        help=f"{semantic} = semantic sentence embeddings (default for this language); "
-        "hybrid adds TF-IDF vocabulary; tfidf needs no model download.",
+        list(dict.fromkeys([default, semantic, "hybrid", "tfidf"])),
+        help=f"Default for this language: {default}. {semantic} = semantic sentence "
+        "embeddings; hybrid adds TF-IDF vocabulary; tfidf needs no model download.",
     )
     use_claude = st.toggle(
         "Review themes with Claude",

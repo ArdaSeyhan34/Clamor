@@ -18,6 +18,10 @@ on:
       tune_args:
         description: "Extra arguments for scripts/tune.py, e.g. --distances 0.6,0.7"
         default: ""
+      bundle:
+        description: "Also attach the report as a base64 tar.gz annotation (API access only)"
+        type: boolean
+        default: false
 
 jobs:
   benchmark:
@@ -39,6 +43,7 @@ jobs:
       - run: pip install -e .
       - name: Grid search
         if: inputs.grid
+        shell: bash  # -eo pipefail: a failing tune.py fails the step despite the tee
         run: |
           python scripts/tune.py --scenario "$SCENARIO" ${BACKEND:+--backend "$BACKEND"} $TUNE_ARGS \
             | tee -a "$GITHUB_STEP_SUMMARY"
@@ -46,9 +51,14 @@ jobs:
         run: |
           clamor demo --scenario "$SCENARIO" ${BACKEND:+--backend "$BACKEND"} --no-llm --out report
           cat report/report.md >> "$GITHUB_STEP_SUMMARY"
-          for f in report/report.md report/briefs/*.md; do
-            echo "::group::$f"; cat "$f"; echo "::endgroup::"
-          done
+          (cd report && sha256sum report.md roadmap.csv briefs/*.md)
+      - name: Report bundle
+        # the check-run annotations API returns this inline, for clients that can reach
+        # api.github.com but not the artifact storage
+        if: inputs.bundle
+        run: |
+          tar czf - -C report report.md roadmap.csv briefs > bundle.tgz
+          echo "::notice title=report bundle::$(base64 -w0 bundle.tgz)"
       - uses: actions/upload-artifact@v4
         with:
           name: report-${{ inputs.scenario }}

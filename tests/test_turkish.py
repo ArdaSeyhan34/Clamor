@@ -141,3 +141,11 @@ def test_lezzo_pipeline_finds_turkish_themes(lezzo):
     assert result.feedback["text"].str.contains(r"\[phone\]").any()
     # theme names are real sentences, spelled with Turkish characters where customers did
     assert result.themes["name"].str.contains("[çğıöşü]").mean() > 0.5
+
+
+def test_turkish_defaults_to_tuned_hybrid():
+    tr, en = Config(language="tr"), Config()
+    assert (tr.backend, en.backend) == ("hybrid", "minilm")
+    assert tr.backend_default("distance_threshold", "hybrid") == 0.60
+    assert en.backend_default("distance_threshold", "hybrid") == 0.70  # English unchanged
+    assert tr.backend_default("distance_threshold", "tfidf") == 0.90  # fallback backend

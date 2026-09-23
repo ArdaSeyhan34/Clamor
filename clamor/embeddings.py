@@ -210,6 +210,12 @@ class TfidfEmbedder:
         return _normalize(self._pipeline.transform(texts))
 
 
+# Share of the semantic block in a hybrid vector, per semantic model. The multilingual
+# model separates topics less sharply, so its lexical partner gets more say (tuned on the
+# Turkish benchmark, see docs/methodology.md).
+HYBRID_SEMANTIC_WEIGHT = {"minilm": 0.8, "multilingual": 0.65}
+
+
 class HybridEmbedder:
     """Weighted concatenation of a semantic and a lexical embedder (unit norm by design)."""
 
@@ -260,7 +266,11 @@ def get_embedder(name: str = "minilm", fallback: bool = True, lang=None) -> Embe
     try:
         if name == "hybrid":
             semantic = "multilingual" if lang is not None and lang.code != "en" else "minilm"
-            return HybridEmbedder(OnnxSentenceEmbedder(semantic), TfidfEmbedder(lang=lang))
+            return HybridEmbedder(
+                OnnxSentenceEmbedder(semantic),
+                TfidfEmbedder(lang=lang),
+                semantic_weight=HYBRID_SEMANTIC_WEIGHT[semantic],
+            )
         if name in ONNX_MODELS:
             return OnnxSentenceEmbedder(name)
         if name == "tfidf":

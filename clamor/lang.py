@@ -311,7 +311,7 @@ _TR_STOP = frozenset(_TR_STOP_WORDS.split())
 TURKISH = LanguagePack(
     code="tr",
     name="Türkçe",
-    default_embedding="multilingual",
+    default_embedding="hybrid",  # multilingual MiniLM + TF-IDF, see docs/methodology.md
     boilerplate_prototypes=(
         "Merhaba",
         "Merhabalar, iyi günler",

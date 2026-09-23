@@ -34,6 +34,7 @@ PRESETS: dict[str, Weights] = {
 # different scales for semantic and lexical vectors, hence per-backend defaults.
 BACKEND_DEFAULTS: dict[str, dict[str, float]] = {
     "hybrid": {"distance_threshold": 0.70, "boilerplate_threshold": 0.55},
+    "hybrid_multilingual": {"distance_threshold": 0.60, "boilerplate_threshold": 0.55},
     "minilm": {"distance_threshold": 0.65, "boilerplate_threshold": 0.60},
     "multilingual": {"distance_threshold": 0.60, "boilerplate_threshold": 0.55},
     "tfidf": {"distance_threshold": 0.90, "boilerplate_threshold": 0.50},
@@ -44,7 +45,7 @@ BACKEND_DEFAULTS: dict[str, dict[str, float]] = {
 @dataclass(frozen=True)
 class Config:
     language: str = "en"  # "en" or "tr" (see clamor.lang)
-    embedding: str | None = None  # None: the language's default (minilm / multilingual)
+    embedding: str | None = None  # None: the language's default (minilm / hybrid)
     redact_pii: bool = True  # mask e-mails, phones, cards, IBANs, national IDs on load
     product_names: tuple[str, ...] = ()
     distance_threshold: float | None = None
@@ -73,6 +74,8 @@ class Config:
 
     def backend_default(self, key: str, backend: str) -> float:
         family = "st" if backend.startswith("st:") else backend
+        if family == "hybrid" and self.language != "en":  # multilingual MiniLM inside
+            family = "hybrid_multilingual"
         return BACKEND_DEFAULTS.get(family, BACKEND_DEFAULTS["minilm"])[key]
 
     def with_weights(self, weights: Weights) -> Config:

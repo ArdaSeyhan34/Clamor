@@ -35,9 +35,11 @@ jobs:
       matrix:
         include:
           - scenario: tempo  # English, MiniLM
-            min_ari: 0.7
-          - scenario: lezzo  # Turkish, multilingual MiniLM
-            min_ari: 0.45
+            metric: ARI
+            minimum: 0.7
+          - scenario: lezzo  # Turkish, multilingual MiniLM + TF-IDF (splits rather than merges)
+            metric: homogeneity
+            minimum: 0.9
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -52,13 +54,15 @@ jobs:
       - run: clamor demo --scenario ${{ matrix.scenario }} --no-llm --out /tmp/demo 2>&1 | tee demo.log
       - name: Accuracy guard
         env:
-          MIN_ARI: ${{ matrix.min_ari }}
+          METRIC: ${{ matrix.metric }}
+          MINIMUM: ${{ matrix.minimum }}
         run: |
           python - <<'PY'
           import os, re
           log = open("demo.log").read()
           assert "falling back" not in log, "the embedding model could not be loaded"
-          ari = float(re.search(r"ARI ([0-9.]+)", log).group(1))
-          assert ari > float(os.environ["MIN_ARI"]), f"theme discovery regressed: ARI {ari}"
-          print("ARI", ari)
+          metric, minimum = os.environ["METRIC"], float(os.environ["MINIMUM"])
+          value = float(re.search(rf"{metric} ([0-9.]+)", log).group(1))
+          assert value > minimum, f"theme discovery regressed: {metric} {value}"
+          print(metric, value)
           PY
