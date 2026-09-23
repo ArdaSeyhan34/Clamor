@@ -53,12 +53,16 @@ jobs:
           cat report/report.md >> "$GITHUB_STEP_SUMMARY"
           (cd report && sha256sum report.md roadmap.csv briefs/*.md)
       - name: Report bundle
-        # the check-run annotations API returns this inline, for clients that can reach
-        # api.github.com but not the artifact storage
+        # the check-run annotations API returns these inline, for clients that can reach
+        # api.github.com but not the artifact storage (annotations hold up to 4 KB each)
         if: inputs.bundle
         run: |
-          tar czf - -C report report.md roadmap.csv briefs > bundle.tgz
-          echo "::notice title=report bundle::$(base64 -w0 bundle.tgz)"
+          tar czf bundle.tgz -C report report.md roadmap.csv briefs
+          base64 -w 4000 bundle.tgz > chunks.txt
+          n=$(wc -l < chunks.txt); i=0
+          while read -r chunk; do
+            i=$((i + 1)); echo "::notice title=report bundle $i/$n::$chunk"
+          done < chunks.txt
       - uses: actions/upload-artifact@v4
         with:
           name: report-${{ inputs.scenario }}
