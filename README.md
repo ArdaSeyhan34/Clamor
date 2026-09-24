@@ -92,7 +92,7 @@ The second demo, **Lezzo**, is a fictional Turkish employee meal-card app: 2,738
 reviews, support tickets and survey answers from end users, written the way people type on
 a phone ("odeme gecmiyor", typos, capitals), with phone numbers and e-mail addresses inside
 tickets and **no revenue data**, so the ranking rests on reach, severity and momentum
-([report](reports/demo_lezzo/report.md)). The top five of its roadmap are five separate
+([report, in Turkish](reports/demo_lezzo/report.md)). The top five of its roadmap are five separate
 bugs that the new QR payment screen (v5.3) introduced: payments that do not go through, a
 white screen, a camera that does not read the code, payments that never reach the
 restaurant and double charges, each flagged as *emerging* with its own evidence.
