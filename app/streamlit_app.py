@@ -9,13 +9,14 @@ import sys
 from dataclasses import replace
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))  # run from a fresh clone without installing the package
 
-from clamor import charts, llm, synth  # noqa: E402
+from clamor import charts, i18n, llm, synth  # noqa: E402
 from clamor.briefs import theme_evidence, write_brief  # noqa: E402
 from clamor.config import PRESETS, Config, Weights  # noqa: E402
 from clamor.embeddings import get_embedder  # noqa: E402
@@ -31,7 +32,7 @@ from clamor.io import (  # noqa: E402
 from clamor.lang import get_language  # noqa: E402
 from clamor.pipeline import analyze, build_theme_model, merge_themes  # noqa: E402
 from clamor.privacy import redact  # noqa: E402
-from clamor.report import STATUS_ICON, release_table, roadmap_table  # noqa: E402
+from clamor.report import KIND, release_table, roadmap_table, status_label  # noqa: E402
 from clamor.scoring import contributions  # noqa: E402
 from clamor.sentiment import score_feedback  # noqa: E402
 
@@ -44,16 +45,73 @@ except Exception:  # no secrets file locally
     pass
 
 MODE = "dark" if getattr(getattr(st.context, "theme", None), "type", "light") == "dark" else "light"
-DEMOS = {  # label -> (scenario, data folder, language, product names)
-    "Demo: Tempo (English B2B SaaS)": ("tempo", ROOT / "data" / "demo", "en", ("Tempo",)),
-    "Demo: Lezzo (Turkish meal-card app)": (
-        "lezzo",
+DEMOS = {  # scenario -> (label, data folder, language, product names, early-warning tip)
+    "tempo": (
+        "Demo: Tempo (English B2B SaaS)",
+        ROOT / "data" / "demo",
+        "en",
+        ("Tempo",),
+        "Tip: move **Analyze as of** in the sidebar to mid-March to watch the sync "
+        "regression get flagged.",
+    ),
+    "lezzo": (
+        "Demo: Lezzo (Turkish meal-card app)",
         ROOT / "data" / "demo_lezzo",
         "tr",
         ("Lezzo",),
+        "Tip: move **Analyze as of** in the sidebar to late March to watch the login "
+        "problems after v5.1 get flagged.",
     ),
 }
+UPLOAD = "upload"
 LANGUAGES = {"English": "en", "Türkçe": "tr"}
+EVAL_COLUMNS = {  # evaluation tables: column -> heading, per interface language
+    "tr": {
+        "spikes_detected": "yakalanan sıçrama",
+        "spikes_total": "toplam sıçrama",
+        "median_days_to_detect": "yakalama süresi (medyan gün)",
+        "false_alarm_episodes": "yanlış alarm",
+        "false_alarm_days": "yanlış alarm günü",
+        "spurious_trend_days": "yersiz eğilim günü",
+        "spike": "sıçrama",
+        "started": "başlangıç",
+        "method": "yöntem",
+        "first_alert": "ilk uyarı",
+        "days_to_detect": "yakalama süresi (gün)",
+        "true_theme": "gerçek tema",
+        "items": "öğe",
+        "recovered_share": "doğru temaya düşen pay",
+        "themes": "tema sayısı",
+        "largest_theme": "en büyük tema",
+        "largest_theme_share": "en büyük temanın payı",
+        "largest_theme_purity": "en büyük temanın saflığı",
+    }
+}
+
+
+def interface_language() -> str:
+    """?lang=tr in the URL, else the browser's language, else English."""
+    requested = st.query_params.get("lang", "")
+    if requested in i18n.OUTPUT_LANGUAGES:
+        return requested
+    locale = str(getattr(st.context, "locale", None) or "")
+    return "tr" if locale.lower().startswith("tr") else "en"
+
+
+st.sidebar.title("\U0001f4e3 Clamor")
+UI = st.sidebar.segmented_control(
+    "Interface language / Arayüz dili",
+    list(LANGUAGES),
+    default=next(k for k, v in LANGUAGES.items() if v == interface_language()),
+    label_visibility="collapsed",
+)
+UI = LANGUAGES.get(UI) or interface_language()  # None when the selection is clicked again
+st.query_params["lang"] = UI
+
+
+def _(text: str, **values) -> str:
+    """Translate dashboard text into the interface language (see clamor.i18n)."""
+    return i18n.t(text, UI, **values)
 
 
 # --------------------------------------------------------------------------- data & models
@@ -83,7 +141,7 @@ def embedder_for(backend: str, language: str):
     return get_embedder(backend, lang=get_language(language))
 
 
-@st.cache_resource(show_spinner="Discovering themes (embedding and clustering)...")
+@st.cache_resource(show_spinner=_("Discovering themes (embedding and clustering)..."))
 def theme_model(
     data_key: str, _feedback: pd.DataFrame, backend: str, language: str, product: tuple[str, ...]
 ):
@@ -99,14 +157,14 @@ def theme_model(
     )
 
 
-@st.cache_resource(show_spinner="Claude is reviewing the themes...")
-def claude_reviewed_model(data_key: str, _model, _themes: pd.DataFrame):
-    review = llm.ClaudeAnalyst().review_themes(_themes)
+@st.cache_resource(show_spinner=_("Claude is reviewing the themes..."))
+def claude_reviewed_model(data_key: str, _model, _themes: pd.DataFrame, language: str):
+    review = llm.ClaudeAnalyst().review_themes(_themes, language=language)
     model = merge_themes(_model, llm.merge_suggestions(review))
     return replace(model, themes=llm.apply_review(model.themes, review))  # keep cache intact
 
 
-@st.cache_data(show_spinner="Backtesting early warnings day by day...")
+@st.cache_data(show_spinner=_("Backtesting early warnings day by day..."))
 def cached_evaluation(data_key: str, _analysis, _dataset: dict) -> dict:
     return evaluate_all(_analysis, synth.SyntheticDataset(**_dataset))
 
@@ -125,14 +183,19 @@ def frame_key(*frames: pd.DataFrame | None) -> str:
 
 
 # --------------------------------------------------------------------------- sidebar
-st.sidebar.title("\U0001f4e3 Clamor")
-st.sidebar.caption("Customer feedback → prioritized, evidence-backed roadmap")
+st.sidebar.caption(_("Customer feedback → prioritized, evidence-backed roadmap"))
 
-source = st.sidebar.radio("Data", [*DEMOS, "Upload your own"], label_visibility="collapsed")
+source = st.sidebar.radio(
+    _("Data"),
+    [*DEMOS, UPLOAD],
+    format_func=lambda k: _(DEMOS[k][0]) if k in DEMOS else _("Upload your own"),
+    label_visibility="collapsed",
+)
 dataset = None
+tip = None
 if source in DEMOS:
-    scenario, folder, language, product_names = DEMOS[source]
-    dataset = load_demo(scenario, str(folder))
+    _label, folder, language, product_names, tip = DEMOS[source]
+    dataset = load_demo(source, str(folder))
     feedback_raw, accounts_raw, releases_raw = (
         dataset["feedback"],
         dataset["accounts"],
@@ -141,30 +204,46 @@ if source in DEMOS:
 else:
     kinds = ["csv", "xlsx", "json"]
     up_fb = st.sidebar.file_uploader(
-        "Feedback: one or more exports (text + date required)",
+        _("Feedback: one or more exports (text + date required)"),
         type=kinds,
         accept_multiple_files=True,
     )
-    up_acc = st.sidebar.file_uploader("Accounts (account_id + mrr, optional)", type=kinds)
-    up_rel = st.sidebar.file_uploader("Releases (date + title, optional)", type=kinds)
-    language = LANGUAGES[st.sidebar.selectbox("Language of the feedback", list(LANGUAGES))]
-    names = st.sidebar.text_input("Product name(s) to ignore, comma separated", "")
+    up_acc = st.sidebar.file_uploader(_("Accounts (account_id + mrr, optional)"), type=kinds)
+    up_rel = st.sidebar.file_uploader(_("Releases (date + title, optional)"), type=kinds)
+    language = LANGUAGES[
+        st.sidebar.selectbox(
+            _("Language of the feedback"),
+            list(LANGUAGES),
+            index=list(LANGUAGES.values()).index(UI),
+        )
+    ]
+    names = st.sidebar.text_input(_("Product name(s) to ignore, comma separated"), "")
     product_names = tuple(n.strip() for n in names.split(",") if n.strip())
     if not up_fb:
-        st.title("Bring your own feedback")
+        st.title(_("Bring your own feedback"))
         st.markdown(
-            "Upload a CSV export from your support tool, app store reviews or NPS survey. "
-            "Only a **text** column and a **date** column are required; common names such as "
-            "`body`, `comment`, `review`, `created`, `timestamp` (and Turkish ones such as "
-            "`Yorum`, `Açıklama`, `Tarih`, `Puan`) are recognized automatically, as are Google "
-            "Play Console exports. Several files (say, store reviews and support tickets) are "
-            "combined, each keeping its own channel. Phone numbers, e-mails, card numbers, "
-            "IBANs and national ID numbers are masked before anything is analyzed."
-            "\n\nAdd an **accounts** file (`account_id`, `mrr`, `plan`) to weigh themes by "
-            "revenue, and a **releases** file (`date`, `title`, `description`) to get the "
-            "release radar.\n\nFiles are processed in memory by the server running this app "
-            "and are not stored. For confidential data, run the app on your own machine: "
-            "then nothing leaves it except, if you enable it, theme summaries sent to Claude."
+            _(
+                "Upload a CSV export from your support tool, app store reviews or NPS survey. "
+                "Only a **text** column and a **date** column are required; common names such "
+                "as `body`, `comment`, `review`, `created`, `timestamp` (and Turkish ones such "
+                "as `Yorum`, `Açıklama`, `Tarih`, `Puan`) are recognized automatically, as are "
+                "Google Play Console exports. Several files (say, store reviews and support "
+                "tickets) are combined, each keeping its own channel. Phone numbers, e-mails, "
+                "card numbers, IBANs and national ID numbers are masked before anything is "
+                "analyzed."
+            )
+            + "\n\n"
+            + _(
+                "Add an **accounts** file (`account_id`, `mrr`, `plan`) to weigh themes by "
+                "revenue, and a **releases** file (`date`, `title`, `description`) to get the "
+                "release radar."
+            )
+            + "\n\n"
+            + _(
+                "Files are processed in memory by the server running this app and are not "
+                "stored. For confidential data, run the app on your own machine: then nothing "
+                "leaves it except, if you enable it, theme summaries sent to Claude."
+            )
         )
         st.stop()
     frames = [read_upload(f) for f in up_fb]
@@ -181,7 +260,7 @@ try:
     acc_valid = load_accounts(accounts_raw)
     load_releases(releases_raw)  # validate early, with a friendly error
 except ValueError as exc:
-    st.error(f"Could not read the input: {exc}")
+    st.error(_("Could not read the input: {error}", error=exc))
     st.stop()
 
 min_day, max_day = fb_valid["created_at"].min().date(), fb_valid["created_at"].max().date()
@@ -192,53 +271,65 @@ try:  # shareable links: ?as_of=2026-03-20 opens the dashboard on that day
 except ValueError:
     start_value = max_day
 as_of = st.sidebar.slider(
-    "Analyze as of",
+    _("Analyze as of"),
     min_value=first_day,
     max_value=max_day,
     value=start_value,
-    format="MMM D, YYYY",
-    help="Time travel: see what Clamor would have told you on that day.",
+    format="D.MM.YYYY" if UI == "tr" else "MMM D, YYYY",
+    help=_("Time travel: see what Clamor would have told you on that day."),
 )
 
-st.sidebar.subheader("What matters most?")
-preset = st.sidebar.selectbox("Weight preset", list(PRESETS), index=0, format_func=str.capitalize)
+st.sidebar.subheader(_("What matters most?"))
+preset = st.sidebar.selectbox(
+    _("Weight preset"), list(PRESETS), index=0, format_func=lambda p: _(p).capitalize()
+)
 base = PRESETS[preset]
-with st.sidebar.expander("Fine-tune weights"):
+with st.sidebar.expander(_("Fine-tune weights")):
     weights = Weights(
-        reach=st.slider("Reach (accounts)", 0.0, 1.0, base.reach, 0.05),
-        revenue=st.slider("Revenue-weighted demand", 0.0, 1.0, base.revenue, 0.05),
-        severity=st.slider("Severity (negative sentiment)", 0.0, 1.0, base.severity, 0.05),
-        momentum=st.slider("Momentum (significant growth)", 0.0, 1.0, base.momentum, 0.05),
+        reach=st.slider(_("Reach (accounts)"), 0.0, 1.0, base.reach, 0.05),
+        revenue=st.slider(_("Revenue-weighted demand"), 0.0, 1.0, base.revenue, 0.05),
+        severity=st.slider(_("Severity (negative sentiment)"), 0.0, 1.0, base.severity, 0.05),
+        momentum=st.slider(_("Momentum (significant growth)"), 0.0, 1.0, base.momentum, 0.05),
     )
 
-with st.sidebar.expander("Model"):
+with st.sidebar.expander(_("Model")):
     semantic = "minilm" if language == "en" else "multilingual"
     default = get_language(language).default_embedding
     backend = st.selectbox(
-        "Embedding backend",
+        _("Embedding backend"),
         list(dict.fromkeys([default, semantic, "hybrid", "tfidf"])),
-        help=f"Default for this language: {default}. {semantic} = semantic sentence "
-        "embeddings; hybrid adds TF-IDF vocabulary; tfidf needs no model download.",
+        help=_(
+            "Default for this language: {default}. {semantic} = semantic sentence embeddings; "
+            "hybrid adds TF-IDF vocabulary; tfidf needs no model download.",
+            default=default,
+            semantic=semantic,
+        ),
     )
     use_claude = st.toggle(
-        "Review themes with Claude",
+        _("Review themes with Claude"),
         value=False,
         disabled=not llm.available(),
-        help="Names, classifies and de-duplicates themes. Needs ANTHROPIC_API_KEY.",
+        help=_("Names, classifies and de-duplicates themes. Needs ANTHROPIC_API_KEY."),
     )
     if not llm.available():
-        st.caption("Set `ANTHROPIC_API_KEY` to enable the Claude analyst layer.")
+        st.caption(_("Set `ANTHROPIC_API_KEY` to enable the Claude analyst layer."))
 
 # --------------------------------------------------------------------------- analysis
 data_key = frame_key(feedback_raw) + backend + language + ",".join(product_names)
 model = theme_model(data_key, feedback_raw, backend, language, product_names)
-config = Config(language=language, embedding=backend, product_names=product_names, weights=weights)
+config = Config(
+    language=language,
+    embedding=backend,
+    product_names=product_names,
+    weights=weights,
+    report_language=UI,
+)
 if use_claude:
     try:
         first = analyze(feedback_raw, accounts_raw, releases_raw, config=config, model=model)
-        model = claude_reviewed_model(data_key, model, first.themes)
+        model = claude_reviewed_model(data_key, model, first.themes, UI)
     except llm.LLMUnavailable as exc:
-        st.sidebar.warning(f"Claude unavailable: {exc}")
+        st.sidebar.warning(_("Claude unavailable: {error}", error=exc))
 analysis = analyze(
     feedback_raw, accounts_raw, releases_raw, config=config, as_of=pd.Timestamp(as_of), model=model
 )
@@ -248,67 +339,84 @@ road = analysis.roadmap
 
 if model.backend != backend:
     st.warning(
-        f"The `{backend}` model could not be loaded, so Clamor fell back to "
-        f"`{model.backend}`. Results will be less accurate."
+        _(
+            "The `{backend}` model could not be loaded, so Clamor fell back to `{fallback}`. "
+            "Results will be less accurate.",
+            backend=backend,
+            fallback=model.backend,
+        )
     )
 
 # --------------------------------------------------------------------------- header
-st.title("What should we build next?")
+st.title(_("What should we build next?"))
 fb = analysis.feedback[analysis.feedback["created_at"] < analysis.as_of + pd.Timedelta(days=1)]
+people_title = i18n.people(analysis.people, UI, "title")
 cols = st.columns(5)
-cols[0].metric("Feedback items", f"{len(fb):,}")
-cols[1].metric(analysis.people.capitalize(), f"{fb['account_id'].nunique():,}")
-cols[2].metric("Themes", len(themes))
-cols[3].metric("Early warnings", int(themes["status"].isin(["new", "emerging"]).sum()))
+cols[0].metric(_("Feedback items"), i18n.number(len(fb), UI))
+cols[1].metric(people_title, i18n.number(fb["account_id"].nunique(), UI))
+cols[2].metric(_("Themes"), len(themes))
+cols[3].metric(_("Early warnings"), int(themes["status"].isin(["new", "emerging"]).sum()))
 if analysis.has_revenue:
-    cols[4].metric("MRR represented", f"${fb.drop_duplicates('account_id')['mrr'].sum():,.0f}")
+    cols[4].metric(
+        _("MRR represented"), i18n.money(fb.drop_duplicates("account_id")["mrr"].sum(), UI)
+    )
 else:
-    cols[4].metric("Revenue data", "not provided")
+    cols[4].metric(_("Revenue data"), _("not provided"))
 
 tab_road, tab_theme, tab_warn, tab_rel, tab_eval = st.tabs(
-    ["Roadmap", "Theme explorer", "Early warning", "Release radar", "Model quality"]
+    [_("Roadmap"), _("Theme explorer"), _("Early warning"), _("Release radar"), _("Model quality")]
 )
 
 # --------------------------------------------------------------------------- roadmap
 with tab_road:
     insight_cols = st.columns(2)
-    for i, ins in enumerate(headline_insights(analysis)):
+    for i, ins in enumerate(headline_insights(analysis, lang=UI)):
         with insight_cols[i % 2].container(border=True):
             st.markdown(md(f"**{ins.title}**  \n{ins.detail}"))
 
-    st.subheader("Priority ranking")
+    st.subheader(_("Priority ranking"))
     w = weights.normalized()
     st.caption(
-        f"Points each signal contributes. Weights: reach {w.reach:.0%}, revenue "
-        f"{w.revenue:.0%}, severity {w.severity:.0%}, momentum {w.momentum:.0%}. "
-        f"Reach, revenue and severity use the last {config.score_window_days} days."
+        _(
+            "Points each signal contributes. Weights: reach {reach}, revenue {revenue}, "
+            "severity {severity}, momentum {momentum}. Reach, revenue and severity use the "
+            "last {days} days.",
+            reach=i18n.pct(w.reach, UI),
+            revenue=i18n.pct(w.revenue, UI),
+            severity=i18n.pct(w.severity, UI),
+            momentum=i18n.pct(w.momentum, UI),
+            days=config.score_window_days,
+        )
     )
     parts = contributions(
         themes, weights if analysis.has_revenue else replace(weights, revenue=0.0)
     )
-    st.plotly_chart(charts.priority_chart(themes, parts, mode=MODE), theme=None)
+    st.plotly_chart(charts.priority_chart(themes, parts, mode=MODE, lang=UI), theme=None)
+    score_col = _("Score")
     st.dataframe(
-        roadmap_table(analysis),
+        roadmap_table(analysis, lang=UI),
         hide_index=True,
         column_config={
-            "Score": st.column_config.ProgressColumn(
-                "Score", min_value=0, max_value=100, format="%.1f"
+            score_col: st.column_config.ProgressColumn(
+                score_col, min_value=0, max_value=100, format="%.1f"
             )
         },
     )
 
-    st.subheader("Counting votes vs. weighing evidence")
+    st.subheader(_("Counting votes vs. weighing evidence"))
     st.caption(
-        "Left: rank by raw number of mentions. Right: Clamor's priority. Highlighted "
-        "themes moved the most."
+        _(
+            "Left: rank by raw number of mentions. Right: Clamor's priority. Highlighted "
+            "themes moved the most."
+        )
     )
-    st.plotly_chart(charts.rank_shift_chart(themes, mode=MODE), theme=None)
+    st.plotly_chart(charts.rank_shift_chart(themes, mode=MODE, lang=UI), theme=None)
 
 # --------------------------------------------------------------------------- theme explorer
 with tab_theme:
     ranked = list(road["theme_id"])
     options = ranked + [t for t in themes["theme_id"] if t not in ranked]
-    pick = st.selectbox("Theme", options, format_func=lambda t: f"{t} · {names[t]}")
+    pick = st.selectbox(_("Theme"), options, format_func=lambda t: f"{t} · {names[t]}")
     row = themes.set_index("theme_id").loc[pick]
     left, right = st.columns([3, 2])
     with left:
@@ -316,48 +424,70 @@ with tab_theme:
         if row.get("summary"):
             st.markdown(row["summary"])
         st.caption(
-            f"{row['kind'].replace('_', ' ').capitalize()} · keywords: "
-            f"{', '.join(row['keywords'][:6])}"
+            _(
+                "{kind} · keywords: {keywords}",
+                kind=_(KIND.get(row["kind"], row["kind"])),
+                keywords=", ".join(row["keywords"][:6]),
+            )
         )
         m = st.columns(4)
-        m[0].metric(f"Mentions ({config.score_window_days}d)", int(row["mentions"]))
-        m[1].metric(analysis.people.capitalize(), int(row["accounts"]))
-        m[2].metric("Sentiment", f"{row['mean_sentiment']:+.2f}")
-        m[3].metric("Trend", STATUS_ICON.get(row["status"], row["status"]))
+        m[0].metric(_("Mentions ({days}d)", days=config.score_window_days), int(row["mentions"]))
+        m[1].metric(people_title, int(row["accounts"]))
+        sentiment = f"{row['mean_sentiment']:+.2f}"
+        m[2].metric(_("Sentiment"), sentiment.replace(".", ",") if UI == "tr" else sentiment)
+        lift = row["lift"]
+        m[3].metric(  # the status is the label: it is too long for a metric value
+            status_label(row["status"], UI),
+            f"x{i18n.number(lift, UI, 2)}" if np.isfinite(lift) else "–",
+            help=_(
+                "Trend: mention rate over the last {days} days vs. the baseline.",
+                days=config.recent_days,
+            ),
+        )
         st.plotly_chart(
             charts.timeline_chart(
-                analysis.weekly, names, [pick], analysis.releases, mode=MODE, normalize=False
+                analysis.weekly,
+                names,
+                [pick],
+                analysis.releases,
+                mode=MODE,
+                normalize=False,
+                lang=UI,
             ),
             theme=None,
         )
     with right:
-        st.markdown("**What customers say**")
+        st.markdown(f"**{_('What customers say')}**")
         for q in list(row["examples"])[:6]:
             st.markdown(md(f"> {q}"))
-        mix = pd.Series(row["plan_mix"], name="share").sort_values(ascending=False)
+        mix = pd.Series(row["plan_mix"], name=_("share")).sort_values(ascending=False)
         if analysis.has_revenue and len(mix):
-            st.markdown("**Plan mix**")
-            st.dataframe(mix.map("{:.0%}".format))
+            st.markdown(f"**{_('Plan mix')}**")
+            st.dataframe(mix.map(lambda x: i18n.pct(x, UI)))
 
-    st.markdown("#### Opportunity brief")
+    st.markdown(f"#### {_('Opportunity brief')}")
     brief_llm = st.toggle(
-        "Write it with Claude", value=False, disabled=not llm.available(), key="brief_llm"
+        _("Write it with Claude"), value=False, disabled=not llm.available(), key="brief_llm"
     )
-    text, src = write_brief(analysis, pick, use_llm=brief_llm)
+    text, src = write_brief(analysis, pick, use_llm=brief_llm, lang=UI)
     with st.container(border=True):
         st.markdown(md(text))
-    st.download_button("Download brief (Markdown)", text, file_name=f"brief-{pick}.md")
-    with st.expander("Evidence pack sent to the brief writer"):
+    st.download_button(_("Download brief (Markdown)"), text, file_name=f"brief-{pick}.md")
+    with st.expander(_("Evidence pack sent to the brief writer")):
         st.json(theme_evidence(analysis, pick), expanded=False)
 
 # --------------------------------------------------------------------------- early warning
 with tab_warn:
     st.caption(
-        f"Each theme's mention rate in the last {config.recent_days} days vs. the "
-        f"{config.baseline_days} days before, normalized for overall feedback volume "
-        "(median-of-ratios), tested with an exact Poisson rate test and corrected for "
-        "multiple comparisons (Benjamini-Hochberg). Tip: move **Analyze as of** in the "
-        "sidebar to mid-March to watch the sync regression get flagged."
+        _(
+            "Each theme's mention rate in the last {recent} days vs. the {baseline} days "
+            "before, normalized for overall feedback volume (median-of-ratios), tested with an "
+            "exact Poisson rate test and corrected for multiple comparisons "
+            "(Benjamini-Hochberg).",
+            recent=config.recent_days,
+            baseline=config.baseline_days,
+        )
+        + (f" {_(tip)}" if tip else "")
     )
     warn = themes[
         [
@@ -376,34 +506,36 @@ with tab_warn:
         {"new": 0, "emerging": 1, "rising": 2, "declining": 3, "stable": 4, "quiet": 5}
     )
     warn = warn.sort_values(["order", "lift"], ascending=[True, False]).drop(columns="order")
-    warn["status"] = warn["status"].map(STATUS_ICON)
+    warn["status"] = warn["status"].map(lambda s: status_label(s, UI))
     st.dataframe(
         warn,
         hide_index=True,
         column_config={
             "theme_id": "ID",
-            "name": "Theme",
-            "status": "Status",
-            "recent_mentions": "Recent",
-            "baseline_mentions": "Baseline",
-            "lift": st.column_config.NumberColumn("Rate vs baseline", format="x%.2f"),
-            "lift_ci_low": st.column_config.NumberColumn("95% CI low", format="x%.2f"),
-            "lift_ci_high": st.column_config.NumberColumn("95% CI high", format="x%.2f"),
-            "q_value": st.column_config.NumberColumn("q-value (FDR)", format="%.4f"),
+            "name": _("Theme"),
+            "status": _("Status"),
+            "recent_mentions": _("Recent"),
+            "baseline_mentions": _("Baseline"),
+            "lift": st.column_config.NumberColumn(_("Rate vs baseline"), format="x%.2f"),
+            "lift_ci_low": st.column_config.NumberColumn(_("95% CI low"), format="x%.2f"),
+            "lift_ci_high": st.column_config.NumberColumn(_("95% CI high"), format="x%.2f"),
+            "q_value": st.column_config.NumberColumn(_("q-value (FDR)"), format="%.4f"),
         },
     )
     default = [
         t for t in themes.loc[themes["status"].isin(["new", "emerging", "declining"]), "theme_id"]
     ][:4] or list(road["theme_id"][:3])
     chosen = st.multiselect(
-        "Compare themes over time (up to 4)",
+        _("Compare themes over time (up to 4)"),
         options,
         default=default,
         max_selections=4,
         format_func=lambda t: f"{t} · {names[t]}",
     )
     st.plotly_chart(
-        charts.timeline_chart(analysis.weekly, names, chosen, analysis.releases, mode=MODE),
+        charts.timeline_chart(
+            analysis.weekly, names, chosen, analysis.releases, mode=MODE, lang=UI
+        ),
         theme=None,
     )
 
@@ -411,57 +543,81 @@ with tab_warn:
 with tab_rel:
     if analysis.releases is None or analysis.releases.empty:
         st.info(
-            "Upload a releases file (date, title, description) to see whether shipped "
-            "work changed what customers talk about."
+            _(
+                "Upload a releases file (date, title, description) to see whether shipped "
+                "work changed what customers talk about."
+            )
         )
     else:
         st.caption(
-            "For each release, the linked theme's mention rate after vs. before "
-            "(windows cut at neighbouring releases, normalized for overall volume). "
-            "Observational evidence, not a controlled experiment."
+            _(
+                "For each release, the linked theme's mention rate after vs. before (windows "
+                "cut at neighbouring releases, normalized for overall volume). Observational "
+                "evidence, not a controlled experiment."
+            )
         )
-        st.plotly_chart(charts.release_chart(analysis.releases, names, mode=MODE), theme=None)
-        st.dataframe(release_table(analysis), hide_index=True)
+        st.plotly_chart(
+            charts.release_chart(analysis.releases, names, mode=MODE, lang=UI), theme=None
+        )
+        st.dataframe(release_table(analysis, lang=UI), hide_index=True)
         if analysis.side_effects is not None and len(analysis.side_effects):
             st.markdown(
-                "**Suspected side effects**: themes that spiked after a release they "
-                "were not linked to."
+                _(
+                    "**Suspected side effects**: themes that spiked after a release they "
+                    "were not linked to."
+                )
             )
             fx = analysis.side_effects.assign(theme=analysis.side_effects["theme_id"].map(names))
             st.dataframe(
                 fx[["version", "theme", "pre_mentions", "post_mentions", "rate_ratio", "q_value"]],
                 hide_index=True,
+                column_config={
+                    "version": _("Release"),
+                    "theme": _("Theme"),
+                    "pre_mentions": _("Before"),
+                    "post_mentions": _("After"),
+                    "rate_ratio": st.column_config.NumberColumn(_("Rate change"), format="x%.2f"),
+                    "q_value": st.column_config.NumberColumn(_("q-value (FDR)"), format="%.4f"),
+                },
             )
 
 # --------------------------------------------------------------------------- model quality
 with tab_eval:
     if dataset is None:
         st.info(
-            "Model quality is measured on the synthetic dataset, where the true theme of "
-            "every item is known. Switch to the demo data to see it."
+            _(
+                "Model quality is measured on the synthetic dataset, where the true theme of "
+                "every item is known. Switch to the demo data to see it."
+            )
         )
     elif pd.Timestamp(as_of) < fb_valid["created_at"].max().normalize():
-        st.info("Move **Analyze as of** to the last day to run the evaluation.")
+        st.info(_("Move **Analyze as of** to the last day to run the evaluation."))
     else:
         ev = cached_evaluation(data_key, analysis, dataset)
         t, a = ev["themes"], ev["alerts"]
         c = st.columns(4)
-        c[0].metric("Adjusted Rand index", f"{t['adjusted_rand']:.3f}")
-        c[1].metric("Theme purity (homogeneity)", f"{t['homogeneity']:.3f}")
-        c[2].metric("Sentiment sign accuracy", f"{ev['sentiment']['sign_accuracy']:.0%}")
+        c[0].metric(_("Adjusted Rand index"), i18n.number(t["adjusted_rand"], UI, 3))
+        c[1].metric(_("Theme purity (homogeneity)"), i18n.number(t["homogeneity"], UI, 3))
+        c[2].metric(_("Sentiment sign accuracy"), i18n.pct(ev["sentiment"]["sign_accuracy"], UI))
         c[3].metric(
-            "Releases linked correctly",
+            _("Releases linked correctly"),
             f"{int(ev['releases']['correct'].sum())}/{len(ev['releases'])}",
         )
-        st.markdown("**Early-warning backtest**: history replayed day by day.")
+        st.markdown(_("**Early-warning backtest**: history replayed day by day."))
         summary = pd.DataFrame(a).T.rename(
-            index={"clamor": "Clamor", "naive_2x": "Naive: week ≥ 2x average"}
+            index={"clamor": "Clamor", "naive_2x": _("Naive: week ≥ 2x average")}
         )
-        st.dataframe(summary)
-        st.dataframe(ev["detection"], hide_index=True)
-        st.markdown("**How well each true theme was recovered**")
-        st.dataframe(ev["per_theme"], hide_index=True)
+        st.dataframe(summary.rename(columns=EVAL_COLUMNS.get(UI, {})))
+        st.dataframe(
+            ev["detection"]
+            .rename(columns=EVAL_COLUMNS.get(UI, {}))
+            .replace({"clamor": "Clamor", "naive_2x": _("Naive: week ≥ 2x average")}),
+            hide_index=True,
+        )
+        st.markdown(f"**{_('How well each true theme was recovered')}**")
+        st.dataframe(ev["per_theme"].rename(columns=EVAL_COLUMNS.get(UI, {})), hide_index=True)
 
 st.caption(
-    "Clamor · open source · synthetic demo data · [GitHub](https://github.com/ArdaSeyhan34/clamor)"
+    _("Clamor · open source · synthetic demo data")
+    + " · [GitHub](https://github.com/ArdaSeyhan34/clamor)"
 )

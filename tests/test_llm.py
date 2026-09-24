@@ -118,3 +118,14 @@ def test_template_brief_contains_evidence(analysis):
     for section in ("### Problem", "### Who is affected", "### Evidence", "### Why now"):
         assert section in text
     assert ev["quotes"][0] in text
+
+
+def test_claude_writes_in_the_output_language(analysis):
+    tid = analysis.roadmap["theme_id"].iloc[0]
+    client = fake_client("## Özet")
+    analyst = llm.ClaudeAnalyst(client=client)
+    write_brief(analysis, tid, analyst=analyst, lang="tr")
+    write_brief(analysis, tid, analyst=analyst, lang="en")
+    tr, en = (c["system"] for c in client.beta.messages.calls)
+    assert "in Turkish" in tr and "Kimler etkileniyor" in tr
+    assert en == llm.BRIEF_SYSTEM

@@ -13,7 +13,10 @@ clamor analyze data/private/play_reviews.csv data/private/tickets.csv \
 ```
 
 Open `data/private/report/report.html`, or run `streamlit run app/streamlit_app.py` and use
-*Upload your own*.
+*Upload your own* (*Kendi verini yükle* in Türkçe).
+
+The report and briefs come out in the language of the feedback; add `--report-language en`
+for an English report on Turkish feedback, or `--report-language tr` for the reverse.
 
 ## 1. Keep the data out of git
 

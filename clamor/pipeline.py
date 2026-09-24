@@ -367,7 +367,7 @@ def review_with_claude(analysis: Analysis, analyst=None) -> Analysis:
     from . import llm
 
     analyst = analyst or llm.ClaudeAnalyst()
-    review = analyst.review_themes(analysis.themes)
+    review = analyst.review_themes(analysis.themes, language=analysis.config.output_language)
     model = merge_themes(analysis.model, llm.merge_suggestions(review))
     model.themes = llm.apply_review(model.themes, review)
     return rerun(analysis, model=model)

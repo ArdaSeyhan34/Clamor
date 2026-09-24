@@ -18,7 +18,8 @@ notes and answers the questions a product team actually has:
 4. **Did what we shipped actually work?** Every release is checked against what
    customers said before and after it.
 
-It works in **English and Turkish**, reads raw exports from the Google Play Console and
+It works in **English and Turkish**, from reading the feedback to the report, the briefs and
+the dashboard itself. It reads raw exports from the Google Play Console and
 helpdesk tools as they are, and masks personal data (phone numbers, e-mails, card
 numbers, IBANs, national IDs) before anything is analyzed. An optional **Claude** layer
 names the themes the way a PM would and drafts a one-page opportunity brief for any of
@@ -111,6 +112,12 @@ diacritics, a sentiment lexicon matched on word stems for an agglutinative langu
 multilingual MiniLM combined with TF-IDF, tuned to split distinct problems rather than
 merge them.
 
+The output speaks Turkish too. Reports, opportunity briefs, charts and Claude's theme names
+follow the language of the feedback unless `--report-language` says otherwise (numbers as
+`2.738`, `%94`, `3,41`; dates as `23 Mart 2026`), and the dashboard has an
+English / Türkçe switch. It opens in Türkçe for a browser set to Turkish, and a link
+with `?lang=tr` always does.
+
 ## Quickstart
 
 ```bash
@@ -144,6 +151,9 @@ clamor analyze feedback.csv --accounts accounts.csv --releases releases.csv \
 
 # several exports at once, in Turkish, without revenue data
 clamor analyze play_reviews.csv tickets.csv --releases releases.csv --language tr
+
+# Turkish feedback, English report (or the other way round)
+clamor analyze play_reviews.csv --language tr --report-language en
 ```
 
 | File | Required columns | Optional columns |
@@ -257,6 +267,7 @@ clamor/
   pipeline.py     build_theme_model (slow part) + analyze (fast, re-runnable)
   evaluate.py     accuracy metrics and day-by-day alert backtest
   llm.py          Claude theme review and briefs
+  i18n.py         output language: Turkish translations, number and date formats
   briefs.py       evidence packs and template briefs
   report.py       Markdown and HTML reports
   cli.py          `clamor` command
@@ -291,7 +302,8 @@ docs/                  methodology, a PM case study, a guide for real data
   items to existing themes and open new themes when nothing fits.
 - **Two languages.** English and Turkish have language packs (boilerplate, stop words,
   sentiment lexicon, cue phrases); another language needs a pack of its own in
-  `clamor/lang.py` and a threshold search with `scripts/tune.py`.
+  `clamor/lang.py`, a threshold search with `scripts/tune.py` and, for its output, a
+  catalog in `clamor/i18n.py` (`tests/test_i18n.py` lists any string still missing).
 
 ## License
 

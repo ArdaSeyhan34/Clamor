@@ -8,8 +8,9 @@ from pathlib import Path
 import pandas as pd
 from jinja2 import Environment
 
-from . import charts
+from . import charts, i18n
 from .briefs import write_brief
+from .i18n import t
 from .insights import headline_insights
 from .pipeline import Analysis
 from .scoring import contributions
@@ -32,14 +33,12 @@ STATUS_ICON = {
 }
 
 
-def _money(x: float) -> str:
-    return f"${x:,.0f}"
-
-
-def md_table(df: pd.DataFrame) -> str:
+def md_table(df: pd.DataFrame, lang: str = "en") -> str:
     """GitHub-flavored Markdown table (no extra dependency)."""
 
     def cell(v) -> str:
+        if lang == "tr" and isinstance(v, float):
+            v = str(v).replace(".", ",")
         return str(v).replace("|", "\\|").replace("\n", " ")
 
     head = "| " + " | ".join(map(cell, df.columns)) + " |"
@@ -52,36 +51,49 @@ def md_table(df: pd.DataFrame) -> str:
     return "\n".join([head, sep, *rows])
 
 
-def roadmap_table(analysis: Analysis, top_n: int | None = None) -> pd.DataFrame:
+def roadmap_table(
+    analysis: Analysis, top_n: int | None = None, lang: str | None = None
+) -> pd.DataFrame:
+    lang = lang or analysis.config.output_language
     road = analysis.roadmap if top_n is None else analysis.roadmap.head(top_n)
     table = pd.DataFrame(
         {
-            "Rank": road["rank"].astype(int),
-            "Theme": road["name"],
-            "Type": road["kind"].map(KIND),
-            "Score": road["score"].round(1),
-            "Mentions": road["mentions"].astype(int),
-            analysis.people.capitalize(): road["accounts"].astype(int),
-            "Trend": road["status"].map(STATUS_ICON),
-            "Rank by mentions": road["vote_rank"].astype(int),
+            t("Rank", lang): road["rank"].astype(int),
+            t("Theme", lang): road["name"],
+            t("Type", lang): road["kind"].map(KIND).map(lambda k: t(k, lang)),
+            t("Score", lang): road["score"].round(1),
+            t("Mentions", lang): road["mentions"].astype(int),
+            i18n.people(analysis.people, lang, "title"): road["accounts"].astype(int),
+            t("Trend", lang): road["status"].map(lambda s: status_label(s, lang)),
+            t("Rank by mentions", lang): road["vote_rank"].astype(int),
         }
     )
     if analysis.has_revenue:
-        table.insert(6, "Revenue-weighted MRR", road["mrr_weighted"].map(_money))
+        table.insert(
+            6,
+            t("Revenue-weighted MRR", lang),
+            road["mrr_weighted"].map(lambda x: i18n.money(x, lang)),
+        )
     return table
 
 
-def release_table(analysis: Analysis) -> pd.DataFrame:
+def status_label(status: str, lang: str = "en") -> str:
+    """Trend status with its icon, e.g. '▲ emerging' / '▲ hızla artıyor'."""
+    return t(STATUS_ICON.get(status, status), lang)
+
+
+def release_table(analysis: Analysis, lang: str | None = None) -> pd.DataFrame:
+    lang = lang or analysis.config.output_language
     rel = analysis.releases
     if rel is None or rel.empty:
         return pd.DataFrame()
     names = analysis.themes.set_index("theme_id")["name"]
     return pd.DataFrame(
         {
-            "Date": pd.to_datetime(rel["date"]).dt.date,
-            "Release": rel["version"] + " · " + rel["title"],
-            "Linked theme": rel["theme_id"].map(names).fillna("–"),
-            "Before → after": [
+            t("Date", lang): pd.to_datetime(rel["date"]).dt.date,
+            t("Release", lang): rel["version"] + " · " + rel["title"],
+            t("Linked theme", lang): rel["theme_id"].map(names).fillna("–"),
+            t("Before → after", lang): [
                 "–" if pd.isna(a) else f"{int(a)} → {int(b)}"
                 for a, b in zip(
                     rel.get("pre_mentions", pd.Series(dtype=float)),
@@ -91,105 +103,165 @@ def release_table(analysis: Analysis) -> pd.DataFrame:
             ]
             if "pre_mentions" in rel
             else "–",
-            "Rate change": rel["rate_ratio"].map(lambda r: "–" if pd.isna(r) else f"x{r:.2f}")
+            t("Rate change", lang): rel["rate_ratio"].map(
+                lambda r: "–" if pd.isna(r) else f"x{i18n.number(r, lang, 2)}"
+            )
             if "rate_ratio" in rel
             else "–",
-            "Verdict": rel["verdict"],
+            t("Verdict", lang): rel["verdict"].map(lambda v: t(v, lang)),
         }
     )
 
 
-def to_markdown(analysis: Analysis, evaluation: dict | None = None) -> str:
+def to_markdown(analysis: Analysis, evaluation: dict | None = None, lang: str | None = None) -> str:
+    lang = lang or analysis.config.output_language
     fb = analysis.feedback
     window = analysis.config.score_window_days
+
+    def num(x: float, digits: int = 2) -> str:
+        return i18n.number(x, lang, digits)
+
     lines = [
-        "# Clamor report",
+        f"# {t('Clamor report', lang)}",
         "",
-        f"*{len(fb):,} feedback items from {fb['account_id'].nunique():,} {analysis.people}, "
-        f"{fb['created_at'].min():%b %d, %Y} to {analysis.as_of:%b %d, %Y}. "
-        f"{len(analysis.themes)} themes discovered with the `{analysis.model.backend}` "
-        f"embedding backend. Priority reflects the last {window} days.*",
+        t(
+            "*{items} feedback items from {n} {people}, {start} to {end}. {themes} themes "
+            "discovered with the `{backend}` embedding backend. Priority reflects the last "
+            "{window} days.*",
+            lang,
+            items=i18n.number(len(fb), lang),
+            n=i18n.number(fb["account_id"].nunique(), lang),
+            people=i18n.people(analysis.people, lang),
+            start=i18n.date(fb["created_at"].min(), lang),
+            end=i18n.date(analysis.as_of, lang),
+            themes=len(analysis.themes),
+            backend=analysis.model.backend,
+            window=window,
+        ),
         "",
-        "## Key insights",
+        f"## {t('Key insights', lang)}",
         "",
     ]
-    for ins in headline_insights(analysis):
+    for ins in headline_insights(analysis, lang=lang):
         lines.append(f"- **{ins.title}.** {ins.detail}")
-    lines += ["", "## Prioritized roadmap", "", md_table(roadmap_table(analysis, 15)), ""]
+    lines += [
+        "",
+        f"## {t('Prioritized roadmap', lang)}",
+        "",
+        md_table(roadmap_table(analysis, 15, lang=lang), lang),
+        "",
+    ]
     alerts = analysis.roadmap[analysis.roadmap["status"].isin(["new", "emerging", "rising"])]
-    lines += ["## Early warnings", ""]
+    lines += [f"## {t('Early warnings', lang)}", ""]
     if alerts.empty:
-        lines.append("No theme is growing significantly faster than feedback overall.")
+        lines.append(t("No theme is growing significantly faster than feedback overall.", lang))
     else:
-        lines.append("| Theme | Status | Rate vs baseline | 95% CI | q-value |")
+        head = ["Theme", "Status", "Rate vs baseline", "95% CI", "q-value"]
+        lines.append("| " + " | ".join(t(h, lang) for h in head) + " |")
         lines.append("|---|---|---|---|---|")
         for _, r in alerts.iterrows():
             lines.append(
-                f"| {r['name']} | {STATUS_ICON[r['status']]} | x{r['lift']:.2f} | "
-                f"x{r['lift_ci_low']:.2f} - x{r['lift_ci_high']:.2f} | "
-                f"{r['q_value']:.4f} |"
+                f"| {r['name']} | {status_label(r['status'], lang)} | x{num(r['lift'])} | "
+                f"x{num(r['lift_ci_low'])} - x{num(r['lift_ci_high'])} | "
+                f"{num(r['q_value'], 4)} |"
             )
-    rel = release_table(analysis)
+    rel = release_table(analysis, lang=lang)
     if not rel.empty:
         lines += [
             "",
-            "## Release radar",
+            f"## {t('Release radar', lang)}",
             "",
-            "Did each release change what customers talk about? Rates are compared in "
-            f"windows of up to {analysis.config.impact_window_days} days before and after "
-            "each release, normalized for overall feedback volume.",
+            t(
+                "Did each release change what customers talk about? Rates are compared in "
+                "windows of up to {days} days before and after each release, normalized for "
+                "overall feedback volume.",
+                lang,
+                days=analysis.config.impact_window_days,
+            ),
             "",
-            md_table(rel),
+            md_table(rel, lang),
         ]
         if analysis.side_effects is not None and len(analysis.side_effects):
             names = analysis.themes.set_index("theme_id")["name"]
             lines += [
                 "",
-                "**Suspected side effects** (themes that spiked after a release they "
-                "were not linked to):",
+                t(
+                    "**Suspected side effects** (themes that spiked after a release they "
+                    "were not linked to):",
+                    lang,
+                ),
                 "",
             ]
             for _, s in analysis.side_effects.iterrows():
                 lines.append(
-                    f"- {s['version']}: *{names.get(s['theme_id'], s['theme_id'])}* "
-                    f"x{s['rate_ratio']:.1f} ({int(s['pre_mentions'])} → "
-                    f"{int(s['post_mentions'])} mentions, q = {s['q_value']:.3f})"
+                    t(
+                        "- {version}: *{theme}* x{ratio} ({pre} → {post} mentions, q = {q})",
+                        lang,
+                        version=s["version"],
+                        theme=names.get(s["theme_id"], s["theme_id"]),
+                        ratio=num(s["rate_ratio"], 1),
+                        pre=int(s["pre_mentions"]),
+                        post=int(s["post_mentions"]),
+                        q=num(s["q_value"], 3),
+                    )
                 )
     if evaluation:
-        t = evaluation["themes"]
+        te = evaluation["themes"]
         a = evaluation["alerts"]
+        c, n = a["clamor"], a["naive_2x"]
+        rows = [
+            ("Adjusted Rand index", num(te["adjusted_rand"], 3)),
+            ("Normalized mutual information", num(te["nmi"], 3)),
+            ("Homogeneity (theme purity)", num(te["homogeneity"], 3)),
+            (
+                "Items landing in a theme about their true topic",
+                i18n.pct(te["mean_recovered_share"], lang, 1),
+            ),
+            (
+                "Sentiment sign accuracy",
+                i18n.pct(evaluation["sentiment"]["sign_accuracy"], lang, 1),
+            ),
+            (
+                "Releases linked to the right theme",
+                f"{int(evaluation['releases']['correct'].sum())}/{len(evaluation['releases'])}",
+            ),
+            (
+                "Spikes detected (Clamor / naive 2x rule)",
+                f"{c['spikes_detected']}/{c['spikes_total']} / "
+                f"{n['spikes_detected']}/{n['spikes_total']}",
+            ),
+            (
+                "Median days to detect (Clamor / naive)",
+                f"{c['median_days_to_detect']:.0f} / {n['median_days_to_detect']:.0f}",
+            ),
+            (
+                "False alarm episodes (Clamor / naive)",
+                f"{c['false_alarm_episodes']} / {n['false_alarm_episodes']}",
+            ),
+        ]
         lines += [
             "",
-            "## Accuracy against ground truth (synthetic data)",
+            f"## {t('Accuracy against ground truth (synthetic data)', lang)}",
             "",
-            "| Metric | Value |",
+            f"| {t('Metric', lang)} | {t('Value', lang)} |",
             "|---|---|",
-            f"| Adjusted Rand index | {t['adjusted_rand']:.3f} |",
-            f"| Normalized mutual information | {t['nmi']:.3f} |",
-            f"| Homogeneity (theme purity) | {t['homogeneity']:.3f} |",
-            f"| Items landing in a theme about their true topic | "
-            f"{t['mean_recovered_share']:.1%} |",
-            f"| Sentiment sign accuracy | {evaluation['sentiment']['sign_accuracy']:.1%} |",
-            f"| Releases linked to the right theme | "
-            f"{int(evaluation['releases']['correct'].sum())}/{len(evaluation['releases'])} |",
-            f"| Spikes detected (Clamor / naive 2x rule) | {a['clamor']['spikes_detected']}/"
-            f"{a['clamor']['spikes_total']} / {a['naive_2x']['spikes_detected']}/"
-            f"{a['naive_2x']['spikes_total']} |",
-            f"| Median days to detect (Clamor / naive) | {a['clamor']['median_days_to_detect']:.0f}"
-            f" / {a['naive_2x']['median_days_to_detect']:.0f} |",
-            f"| False alarm episodes (Clamor / naive) | {a['clamor']['false_alarm_episodes']} / "
-            f"{a['naive_2x']['false_alarm_episodes']} |",
+            *[f"| {t(k, lang)} | {v} |" for k, v in rows],
         ]
-    lines += ["", "---", "*Generated by [Clamor](https://github.com/ArdaSeyhan34/clamor).*", ""]
+    lines += [
+        "",
+        "---",
+        t("*Generated by [Clamor](https://github.com/ArdaSeyhan34/clamor).*", lang),
+        "",
+    ]
     return "\n".join(lines)
 
 
 HTML = """<!doctype html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Clamor report</title>
+<title>{{ tx.title }}</title>
 {{ plotly_js }}
 <style>
   :root { color-scheme:light; --bg:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b;
@@ -216,45 +288,60 @@ HTML = """<!doctype html>
 </style>
 </head>
 <body><main>
-<h1>Clamor report</h1>
+<h1>{{ tx.title }}</h1>
 <p class="sub">{{ subtitle }}</p>
 <div class="grid">
 {% for k, v in tiles %}<div class="tile">
   <div class="v">{{ v }}</div><div class="k">{{ k }}</div></div>
 {% endfor %}</div>
 
-<h2>Key insights</h2>
+<h2>{{ tx.insights }}</h2>
 <div class="insights">
 {% for i in insights %}<div class="card insight">
   <b>{{ i.title }}</b><span>{{ i.detail }}</span></div>
 {% endfor %}</div>
 
-<h2>What to work on next</h2>
-<p class="note">Points each signal contributes to the priority score (weights: {{ weights }}).</p>
+<h2>{{ tx.next }}</h2>
+<p class="note">{{ tx.points }}</p>
 <div class="card">{{ priority_chart }}</div>
 <div class="scroll" style="margin-top:12px">{{ roadmap_html }}</div>
 
-<h2>Counting votes vs. weighing evidence</h2>
-<p class="note">Rank by raw number of mentions (left) vs. Clamor's priority (right).
-Highlighted lines moved the most.</p>
+<h2>{{ tx.votes }}</h2>
+<p class="note">{{ tx.votes_note }}</p>
 <div class="card">{{ shift_chart }}</div>
 
-<h2>How themes moved over time</h2>
-<p class="note">Weekly share of all feedback. Vertical lines mark releases.</p>
+<h2>{{ tx.timeline }}</h2>
+<p class="note">{{ tx.timeline_note }}</p>
 <div class="card">{{ timeline_chart }}</div>
 
 {% if release_chart %}
-<h2>Release radar</h2>
-<p class="note">Mention rate of the linked theme after vs. before each release, normalized
-for overall feedback volume, with 95% intervals. Observational evidence, not an experiment.</p>
+<h2>{{ tx.radar }}</h2>
+<p class="note">{{ tx.radar_note }}</p>
 <div class="card">{{ release_chart }}</div>
 <div class="scroll" style="margin-top:12px">{{ release_html }}</div>
 {% endif %}
 
-<footer>Generated by Clamor · embedding backend <code>{{ backend }}</code> ·
-as of {{ as_of }}</footer>
+<footer>{{ tx.footer }}</footer>
 </main></body></html>
 """
+
+
+HTML_TEXT = {  # template slot -> English text (translated by clamor.i18n)
+    "title": "Clamor report",
+    "insights": "Key insights",
+    "next": "What to work on next",
+    "points": "Points each signal contributes to the priority score (weights: {weights}).",
+    "votes": "Counting votes vs. weighing evidence",
+    "votes_note": "Rank by raw number of mentions (left) vs. Clamor's priority (right). "
+    "Highlighted lines moved the most.",
+    "timeline": "How themes moved over time",
+    "timeline_note": "Weekly share of all feedback. Vertical lines mark releases.",
+    "radar": "Release radar",
+    "radar_note": "Mention rate of the linked theme after vs. before each release, normalized "
+    "for overall feedback volume, with 95% intervals. Observational evidence, not an "
+    "experiment.",
+    "footer": "Generated by Clamor · embedding backend {backend} · as of {date}",
+}
 
 
 def default_timeline_themes(analysis: Analysis, n: int = 4) -> list[str]:
@@ -274,9 +361,13 @@ PLOTLY_CDN = (
 
 
 def to_html(
-    analysis: Analysis, timeline_themes: list[str] | None = None, offline: bool = False
+    analysis: Analysis,
+    timeline_themes: list[str] | None = None,
+    offline: bool = False,
+    lang: str | None = None,
 ) -> str:
     """Render the HTML report. `offline=True` inlines plotly.js (~4 MB) instead of the CDN."""
+    lang = lang or analysis.config.output_language
     fb = analysis.feedback
     weights = analysis.config.weights
     parts = contributions(analysis.themes, weights)
@@ -292,35 +383,61 @@ def to_html(
     if timeline_themes is None:
         timeline_themes = default_timeline_themes(analysis)
     tiles = [
-        ("feedback items", f"{len(fb):,}"),
-        (analysis.people, f"{fb['account_id'].nunique():,}"),
-        ("themes", str(len(analysis.themes))),
-        ("early warnings", str(int(analysis.themes["status"].isin(["new", "emerging"]).sum()))),
+        (t("feedback items", lang), i18n.number(len(fb), lang)),
+        (
+            i18n.people(analysis.people, lang, "plural"),
+            i18n.number(fb["account_id"].nunique(), lang),
+        ),
+        (t("themes", lang), str(len(analysis.themes))),
+        (
+            t("early warnings", lang),
+            str(int(analysis.themes["status"].isin(["new", "emerging"]).sum())),
+        ),
     ]
     if analysis.has_revenue:
-        tiles.append(("MRR represented", _money(fb.drop_duplicates("account_id")["mrr"].sum())))
-    rel_table = release_table(analysis)
+        tiles.append(
+            (
+                t("MRR represented", lang),
+                i18n.money(fb.drop_duplicates("account_id")["mrr"].sum(), lang),
+            )
+        )
+    rel_table = release_table(analysis, lang=lang)
     w = weights.normalized()
+    weights_text = ", ".join(
+        f"{t(k, lang)} {i18n.pct(getattr(w, k), lang)}"
+        for k in ("reach", "revenue", "severity", "momentum")
+    )
+    backend, as_of = analysis.model.backend, f"{analysis.as_of:%Y-%m-%d}"
     env = Environment(autoescape=True)
     return env.from_string(HTML).render(
-        subtitle=f"{len(fb):,} feedback items · {fb['created_at'].min():%b %d, %Y} to "
-        f"{analysis.as_of:%b %d, %Y}",
-        tiles=tiles,
-        insights=headline_insights(analysis),
-        weights=f"reach {w.reach:.0%}, revenue {w.revenue:.0%}, severity {w.severity:.0%}, "
-        f"momentum {w.momentum:.0%}",
-        priority_chart=_markup(embed(charts.priority_chart(analysis.themes, parts))),
-        roadmap_html=_markup(roadmap_table(analysis).to_html(index=False, border=0)),
-        shift_chart=_markup(embed(charts.rank_shift_chart(analysis.themes))),
-        timeline_chart=_markup(
-            embed(charts.timeline_chart(analysis.weekly, names, timeline_themes, analysis.releases))
+        lang=lang,
+        tx={
+            key: t(text, lang).format(weights=weights_text, backend=backend, date=as_of)
+            for key, text in HTML_TEXT.items()
+        },
+        subtitle=t(
+            "{items} feedback items · {start} to {end}",
+            lang,
+            items=i18n.number(len(fb), lang),
+            start=i18n.date(fb["created_at"].min(), lang),
+            end=i18n.date(analysis.as_of, lang),
         ),
-        release_chart=_markup(embed(charts.release_chart(analysis.releases, names)))
+        tiles=tiles,
+        insights=headline_insights(analysis, lang=lang),
+        priority_chart=_markup(embed(charts.priority_chart(analysis.themes, parts, lang=lang))),
+        roadmap_html=_markup(roadmap_table(analysis, lang=lang).to_html(index=False, border=0)),
+        shift_chart=_markup(embed(charts.rank_shift_chart(analysis.themes, lang=lang))),
+        timeline_chart=_markup(
+            embed(
+                charts.timeline_chart(
+                    analysis.weekly, names, timeline_themes, analysis.releases, lang=lang
+                )
+            )
+        ),
+        release_chart=_markup(embed(charts.release_chart(analysis.releases, names, lang=lang)))
         if analysis.releases is not None and len(analysis.releases)
         else None,
         release_html=_markup(rel_table.to_html(index=False, border=0)),
-        backend=analysis.model.backend,
-        as_of=f"{analysis.as_of:%Y-%m-%d}",
         plotly_js=_markup(_plotly_inline() if offline else PLOTLY_CDN),
     )
 
@@ -344,7 +461,11 @@ def write_report(
     n_briefs: int = 3,
     use_llm: bool | None = None,
     offline: bool = False,
+    lang: str | None = None,
 ) -> dict[str, Path]:
+    """Write report.md, report.html, roadmap.csv and briefs/ in ``lang`` (default: the
+    config's output language)."""
+    lang = lang or analysis.config.output_language
     out = Path(out_dir)
     (out / "briefs").mkdir(parents=True, exist_ok=True)
     paths = {
@@ -352,8 +473,8 @@ def write_report(
         "html": out / "report.html",
         "roadmap": out / "roadmap.csv",
     }
-    paths["markdown"].write_text(to_markdown(analysis, evaluation), encoding="utf-8")
-    paths["html"].write_text(to_html(analysis, offline=offline), encoding="utf-8")
+    paths["markdown"].write_text(to_markdown(analysis, evaluation, lang=lang), encoding="utf-8")
+    paths["html"].write_text(to_html(analysis, offline=offline, lang=lang), encoding="utf-8")
     cols = [
         "rank",
         "theme_id",
@@ -379,7 +500,7 @@ def write_report(
     ]
     analysis.themes[[c for c in cols if c in analysis.themes]].to_csv(paths["roadmap"], index=False)
     for i, (_, row) in enumerate(analysis.roadmap.head(n_briefs).iterrows(), start=1):
-        text, _ = write_brief(analysis, row["theme_id"], use_llm=use_llm)
+        text, _ = write_brief(analysis, row["theme_id"], use_llm=use_llm, lang=lang)
         path = out / "briefs" / f"{i:02d}-{row['theme_id']}.md"
         path.write_text(text + "\n", encoding="utf-8")
         paths[f"brief_{i}"] = path

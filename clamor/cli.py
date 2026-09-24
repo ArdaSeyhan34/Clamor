@@ -12,6 +12,7 @@ import typer
 
 from . import llm, synth
 from .config import PRESETS, Config
+from .i18n import OUTPUT_LANGUAGES
 from .insights import headline_insights
 from .io import combine_feedback
 from .pipeline import Analysis, analyze, review_with_claude
@@ -75,6 +76,12 @@ SCENARIO_SETTINGS = {
 }  # fmt: skip
 
 
+def _report_language(value: str | None) -> str | None:
+    if value is not None and value not in OUTPUT_LANGUAGES:
+        raise typer.BadParameter(f"unknown report language {value!r}; choose {OUTPUT_LANGUAGES}")
+    return value
+
+
 def _scenario(name: str) -> dict:
     if name not in SCENARIO_SETTINGS:
         raise typer.BadParameter(f"unknown scenario {name!r}; choose {sorted(SCENARIO_SETTINGS)}")
@@ -114,6 +121,9 @@ def analyze_cmd(
     releases: Path | None = typer.Option(None, help="Changelog with date and title."),
     out: Path = typer.Option(Path("reports/latest"), help="Output directory."),
     language: str = typer.Option("en", help="Language of the feedback: en | tr"),
+    report_language: str | None = typer.Option(
+        None, help="Language of the report and briefs: en | tr (default: --language)."
+    ),
     as_of: str | None = typer.Option(None, help="Analyze as if today were this date."),
     backend: str | None = typer.Option(
         None, help="minilm | multilingual | hybrid | tfidf | st:<model> (default: per language)"
@@ -143,6 +153,7 @@ def analyze_cmd(
         product_names=tuple(product_name),
         weights=PRESETS[preset],
         redact_pii=redact,
+        report_language=_report_language(report_language),
     )
     start = time.time()
     source = feedback[0] if len(feedback) == 1 else combine_feedback(feedback)
@@ -162,6 +173,9 @@ def demo(
     out: Path | None = typer.Option(None, help="Output directory for the report."),
     data: Path | None = typer.Option(None, help="Where the demo CSVs live (generated if missing)."),
     backend: str | None = typer.Option(None, help="Embedding backend (default: per language)"),
+    report_language: str | None = typer.Option(
+        None, help="Language of the report and briefs: en | tr (default: the scenario's)."
+    ),
     use_llm: bool | None = typer.Option(None, "--llm/--no-llm"),
     verbose: bool = typer.Option(False, "--verbose", "-v"),
 ) -> None:
@@ -172,7 +186,10 @@ def demo(
     settings = _scenario(scenario)
     dataset = _load_dataset(scenario, data)
     config = Config(
-        language=settings["language"], embedding=backend, product_names=settings["products"]
+        language=settings["language"],
+        embedding=backend,
+        product_names=settings["products"],
+        report_language=_report_language(report_language),
     )
     start = time.time()
     result = analyze(dataset.feedback, dataset.accounts, dataset.releases, config=config)
@@ -242,6 +259,9 @@ def brief(
     theme_id: str = typer.Argument(..., help="Theme id from a report, e.g. T03."),
     scenario: str = typer.Option("tempo", help=f"Demo scenario: {', '.join(synth.SCENARIOS)}"),
     data: Path | None = typer.Option(None, help="Demo dataset directory."),
+    report_language: str | None = typer.Option(
+        None, help="Language of the brief: en | tr (default: the scenario's)."
+    ),
     use_llm: bool | None = typer.Option(None, "--llm/--no-llm"),
 ) -> None:
     """Print the opportunity brief for one theme of a demo dataset."""
@@ -253,7 +273,11 @@ def brief(
         dataset.feedback,
         dataset.accounts,
         dataset.releases,
-        config=Config(language=settings["language"], product_names=settings["products"]),
+        config=Config(
+            language=settings["language"],
+            product_names=settings["products"],
+            report_language=_report_language(report_language),
+        ),
     )
     text, source = write_brief(result, theme_id, use_llm=use_llm)
     typer.echo(text)

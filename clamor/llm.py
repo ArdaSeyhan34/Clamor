@@ -36,7 +36,7 @@ DEFAULT_MODEL = os.environ.get("CLAMOR_MODEL", "claude-opus-5")
 KINDS = ["bug", "feature_request", "ux", "pricing", "praise", "other"]
 
 REVIEW_SYSTEM = """You are a senior product manager reviewing the output of a customer \
-feedback clustering tool for a B2B SaaS product. Each theme comes with keywords, statistics \
+feedback clustering tool for a software product. Each theme comes with keywords, statistics \
 and verbatim customer quotes. Your job is to make the list useful to a product team: give \
 each theme a short, specific name in plain language (3 to 6 words, the way you would write \
 it on a roadmap), classify it, summarize the underlying user need in one sentence, and flag \
@@ -76,6 +76,21 @@ Use only the numbers and quotes provided; never invent metrics, customers or dat
 the evidence is thin, say so and turn it into an open question. Write in concise Markdown \
 with these sections: Problem, Who is affected, Evidence, Why now, Options to explore, \
 How we will know it worked, Open questions. Keep it under 450 words."""
+
+LANGUAGE_NOTE = {  # appended to the system prompt when the output is not in English
+    "tr": {
+        "review": "Write every name and summary in Turkish, in the plain words a Turkish "
+        "product team would use.",
+        "brief": "Write the whole brief in Turkish. Use these section headings: Sorun, Kimler "
+        "etkileniyor, Kanıtlar, Neden şimdi, Değerlendirilecek seçenekler, İşe yaradığını "
+        "nasıl anlayacağız, Açık sorular. Quote customers verbatim.",
+    }
+}
+
+
+def _system(prompt: str, task: str, language: str) -> str:
+    note = LANGUAGE_NOTE.get(language, {}).get(task)
+    return f"{prompt}\n\n{note}" if note else prompt
 
 
 class LLMUnavailable(RuntimeError):
@@ -134,8 +149,11 @@ class ClaudeAnalyst:
             raise LLMUnavailable("response was truncated")
         return "".join(b.text for b in response.content if b.type == "text")
 
-    def review_themes(self, themes: pd.DataFrame) -> pd.DataFrame:
-        """Name, classify and de-duplicate themes. Returns one row per theme_id."""
+    def review_themes(self, themes: pd.DataFrame, language: str = "en") -> pd.DataFrame:
+        """Name, classify and de-duplicate themes. Returns one row per theme_id.
+
+        ``language`` is the language of the names and summaries ("en" or "tr").
+        """
         payload = []
         for _, t in themes.iterrows():
             payload.append(
@@ -152,7 +170,9 @@ class ClaudeAnalyst:
             "Review these feedback themes. Return exactly one entry per theme_id.\n\n"
             + json.dumps(payload, indent=1, default=str)
         )
-        data = json.loads(self._call(REVIEW_SYSTEM, prompt, REVIEW_SCHEMA))
+        data = json.loads(
+            self._call(_system(REVIEW_SYSTEM, "review", language), prompt, REVIEW_SCHEMA)
+        )
         out = pd.DataFrame(data["themes"])
         known = set(themes["theme_id"])
         out = out[out["theme_id"].isin(known)].drop_duplicates("theme_id")
@@ -160,11 +180,11 @@ class ClaudeAnalyst:
         out.loc[out["duplicate_of"] == out["theme_id"], "duplicate_of"] = ""
         return out
 
-    def write_brief(self, evidence: dict) -> str:
+    def write_brief(self, evidence: dict, language: str = "en") -> str:
         prompt = "Write the opportunity brief for this theme. Evidence (JSON):\n\n" + json.dumps(
             evidence, indent=1, default=str
         )
-        return self._call(BRIEF_SYSTEM, prompt).strip()
+        return self._call(_system(BRIEF_SYSTEM, "brief", language), prompt).strip()
 
 
 def apply_review(themes: pd.DataFrame, review: pd.DataFrame) -> pd.DataFrame:

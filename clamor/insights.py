@@ -6,8 +6,9 @@ from dataclasses import dataclass
 
 import pandas as pd
 
+from . import i18n
+from .i18n import t
 from .pipeline import Analysis
-from .stats import format_q
 
 
 @dataclass(frozen=True)
@@ -21,12 +22,6 @@ def _name(row: pd.Series) -> str:
     return str(row.get("name") or row["label"])
 
 
-def _money(x: float) -> str:
-    if x >= 1_000_000:
-        return f"${x / 1_000_000:,.1f}M"
-    return f"${x / 1000:,.1f}k" if x >= 1000 else f"${x:,.0f}"
-
-
 def _top_plan(mix: dict) -> tuple[str, float]:
     if not isinstance(mix, dict) or not mix:
         return "unknown", 0.0
@@ -34,12 +29,27 @@ def _top_plan(mix: dict) -> tuple[str, float]:
     return plan, mix[plan]
 
 
-def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
+def _change(x: float, lang: str) -> str:
+    """+230% in English; '%230 arttı' / '%85 azaldı' in Turkish."""
+    if lang == "tr":
+        return f"{i18n.pct(abs(x), lang)} {'arttı' if x >= 0 else 'azaldı'}"
+    return i18n.pct(x, lang, signed=True)
+
+
+def headline_insights(
+    analysis: Analysis, max_items: int = 6, lang: str | None = None
+) -> list[Insight]:
+    """Up to ``max_items`` headlines, in ``lang`` (default: the config's output language)."""
+    lang = lang or analysis.config.output_language
     road = analysis.roadmap
     out: list[Insight] = []
     if road.empty:
         return out
     window = analysis.config.score_window_days
+    people = i18n.people(analysis.people, lang)
+
+    def num(x: float, digits: int = 1) -> str:
+        return i18n.number(x, lang, digits)
 
     top = road.iloc[0]
     drivers = {
@@ -52,10 +62,19 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
     out.append(
         Insight(
             "priority",
-            f"Top priority: {_name(top)}",
-            f"Score {top['score']:.0f}/100, driven mostly by {main[0]} and {main[1]}: "
-            f"{int(top['mentions'])} mentions from {int(top['accounts'])} {analysis.people} "
-            f"in the last {window} days.",
+            t("Top priority: {name}", lang, name=_name(top)),
+            t(
+                "Score {score}/100, driven mostly by {a} and {b}: {mentions} mentions from "
+                "{n} {people} in the last {window} days.",
+                lang,
+                score=f"{top['score']:.0f}",
+                a=t(main[0], lang),
+                b=t(main[1], lang),
+                mentions=int(top["mentions"]),
+                n=int(top["accounts"]),
+                people=people,
+                window=window,
+            ),
         )
     )
 
@@ -64,10 +83,22 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
         out.append(
             Insight(
                 "alert",
-                f"Early warning: {_name(r)} is {r['status']}",
-                f"Mention rate is {r['lift']:.1f}x its baseline over the last "
-                f"{analysis.config.recent_days} days (95% CI {r['lift_ci_low']:.1f}-"
-                f"{r['lift_ci_high']:.1f}, q {format_q(r['q_value'])}).",
+                t(
+                    "Early warning: {name} is {status}",
+                    lang,
+                    name=_name(r),
+                    status=t(r["status"], lang),
+                ),
+                t(
+                    "Mention rate is {lift}x its baseline over the last {days} days "
+                    "(95% CI {lo}-{hi}, q {q}).",
+                    lang,
+                    lift=num(r["lift"]),
+                    days=analysis.config.recent_days,
+                    lo=num(r["lift_ci_low"]),
+                    hi=num(r["lift_ci_high"]),
+                    q=i18n.q_value(r["q_value"], lang),
+                ),
             )
         )
 
@@ -75,23 +106,37 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
     for _, r in loud.iterrows():
         if analysis.has_revenue:
             plan, share = _top_plan(r["plan_mix"])
-            title = f"Loud, but not the most valuable: {_name(r)}"
-            extra = f" {share:.0%} of its mentions come from {plan} accounts."
+            title = t("Loud, but not the most valuable: {name}", lang, name=_name(r))
+            extra = t(
+                " {share} of its mentions come from {plan} accounts.",
+                lang,
+                share=i18n.pct(share, lang),
+                plan=plan,
+            )
         else:
-            title = f"Frequently mentioned, but lower priority: {_name(r)}"
+            title = t("Frequently mentioned, but lower priority: {name}", lang, name=_name(r))
             w = analysis.config.weights
             gaps = {
                 "fewer distinct users": w.reach * (top["c_reach"] - r["c_reach"]),
                 "milder sentiment": w.severity * (top["c_severity"] - r["c_severity"]),
                 "no significant growth": w.momentum * (top["c_momentum"] - r["c_momentum"]),
             }
-            extra = f" It ranks lower mainly because of {max(gaps, key=gaps.get)}."
+            extra = t(
+                " It ranks lower mainly because of {reason}.",
+                lang,
+                reason=t(max(gaps, key=gaps.get), lang),
+            )
         out.append(
             Insight(
                 "loud",
                 title,
-                f"#{int(r['vote_rank'])} by raw mention count, "
-                f"#{int(r['rank'])} by priority.{extra}",
+                t(
+                    "#{votes} by raw mention count, #{rank} by priority.{extra}",
+                    lang,
+                    votes=int(r["vote_rank"]),
+                    rank=int(r["rank"]),
+                    extra=extra,
+                ),
             )
         )
 
@@ -104,11 +149,18 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
             out.append(
                 Insight(
                     "valuable",
-                    f"Quiet, but expensive: {_name(r)}",
-                    f"Only #{int(r['vote_rank'])} by mention count, yet the largest "
-                    f"revenue-weighted demand ({_money(r['mrr_weighted'])} MRR; "
-                    f"accounts raising it hold "
-                    f"{_money(r['arr_exposed'])} ARR). {share:.0%} of mentions come from {plan}.",
+                    t("Quiet, but expensive: {name}", lang, name=_name(r)),
+                    t(
+                        "Only #{votes} by mention count, yet the largest revenue-weighted "
+                        "demand ({mrr} MRR; accounts raising it hold {arr} ARR). {share} of "
+                        "mentions come from {plan}.",
+                        lang,
+                        votes=int(r["vote_rank"]),
+                        mrr=i18n.money(r["mrr_weighted"], lang, compact=True),
+                        arr=i18n.money(r["arr_exposed"], lang, compact=True),
+                        share=i18n.pct(share, lang),
+                        plan=plan,
+                    ),
                 )
             )
 
@@ -121,14 +173,19 @@ def headline_insights(analysis: Analysis, max_items: int = 6) -> list[Insight]:
             .head(2)
             .iterrows()
         ):
-            theme = names.get(r["theme_id"], r["theme_id"])
-            change = f"{(r['rate_ratio'] - 1):+.0%}"
             out.append(
                 Insight(
                     "release",
-                    f"{r['version']} ({r['title']}): {r['verdict']}",
-                    f"Mentions of “{theme}” changed {change} relative to overall feedback "
-                    f"after the release (95% CI x{r['ci_low']:.2f}-x{r['ci_high']:.2f}).",
+                    f"{r['version']} ({r['title']}): {t(r['verdict'], lang)}",
+                    t(
+                        "Mentions of “{theme}” changed {change} relative to overall feedback "
+                        "after the release (95% CI x{lo}-x{hi}).",
+                        lang,
+                        theme=names.get(r["theme_id"], r["theme_id"]),
+                        change=_change(r["rate_ratio"] - 1, lang),
+                        lo=num(r["ci_low"], 2),
+                        hi=num(r["ci_high"], 2),
+                    ),
                 )
             )
     return out[:max_items]

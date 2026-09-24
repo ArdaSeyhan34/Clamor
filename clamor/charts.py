@@ -12,6 +12,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
+from .i18n import number, t
+
 SERIES = {
     "light": ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"],
     "dark": ["#3987e5", "#d95926", "#199e70", "#c98500"],
@@ -30,10 +32,16 @@ VERDICT_STYLE = {  # verdict -> (status color, icon); icon + label, never color 
     "Inconclusive": ("neutral", "?"),
 }
 COMPONENTS = ["Reach", "Revenue", "Severity", "Momentum"]
+TICKS = [0.1, 0.25, 0.5, 1, 2, 4, 10, 25]  # log-scale ticks of the release chart
 
 
 def _layout(
-    fig: go.Figure, mode: str, height: int, margin: dict | None = None, **kwargs
+    fig: go.Figure,
+    mode: str,
+    height: int,
+    margin: dict | None = None,
+    lang: str = "en",
+    **kwargs,
 ) -> go.Figure:
     # explicit margins: some embedders (e.g. Streamlit) do not honour plotly's automargin
     fig.update_layout(
@@ -47,6 +55,7 @@ def _layout(
             "color": INK_2[mode],
         },
         hoverlabel={"font": {"family": "system-ui, sans-serif"}},
+        separators=",." if lang == "tr" else ".,",  # decimal mark, thousands separator
         legend=kwargs.pop(
             "legend", {"orientation": "h", "yanchor": "bottom", "y": 1.0, "x": 0, "title": None}
         ),
@@ -72,7 +81,11 @@ def _short(text: str, n: int = 38) -> str:
 
 
 def priority_chart(
-    scored: pd.DataFrame, parts: pd.DataFrame, top_n: int = 12, mode: str = "light"
+    scored: pd.DataFrame,
+    parts: pd.DataFrame,
+    top_n: int = 12,
+    mode: str = "light",
+    lang: str = "en",
 ) -> go.Figure:
     """Stacked horizontal bars: how many points each signal contributes to the score."""
     road = scored[scored["score"].notna()].head(top_n)
@@ -83,12 +96,14 @@ def priority_chart(
         fig.add_bar(
             y=labels,
             x=parts[comp],
-            name=comp,
+            name=t(comp, lang),
             orientation="h",
             marker={"color": color, "line": {"color": SURFACE[mode], "width": 2}},
             customdata=np.stack([road["theme_id"], road["score"]], axis=1),
-            hovertemplate=f"<b>%{{y}}</b><br>{comp}: %{{x:.1f}} pts"
-            "<br>Total score: %{customdata[1]:.1f}<extra>%{customdata[0]}</extra>",
+            hovertemplate="<b>%{y}</b><br>"
+            + t("{comp}: {value} pts", lang, comp=t(comp, lang), value="%{x:.1f}")
+            + f"<br>{t('Total score', lang)}: %{{customdata[1]:.1f}}"
+            "<extra>%{customdata[0]}</extra>",
         )
     for label, score in zip(labels, road["score"], strict=True):
         fig.add_annotation(
@@ -101,10 +116,11 @@ def priority_chart(
             font={"color": INK[mode], "size": 12},
         )
     fig.update_yaxes(autorange="reversed", showgrid=False)
-    fig.update_xaxes(title="Priority score (points by signal)", range=[0, 105])
+    fig.update_xaxes(title=t("Priority score (points by signal)", lang), range=[0, 105])
     return _layout(
         fig,
         mode,
+        lang=lang,
         height=110 + 30 * len(road),
         margin={"l": 12 + 7 * max(len(label) for label in labels)},
         barmode="stack",
@@ -113,7 +129,9 @@ def priority_chart(
     )
 
 
-def rank_shift_chart(scored: pd.DataFrame, top_n: int = 10, mode: str = "light") -> go.Figure:
+def rank_shift_chart(
+    scored: pd.DataFrame, top_n: int = 10, mode: str = "light", lang: str = "en"
+) -> go.Figure:
     """Slope chart: rank by raw mention count vs rank by Clamor's priority score."""
     road = scored[scored["score"].notna()]
     road = road[(road["rank"] <= top_n) | (road["vote_rank"] <= top_n)]
@@ -131,8 +149,9 @@ def rank_shift_chart(scored: pd.DataFrame, top_n: int = 10, mode: str = "light")
             marker={"size": 9, "color": color, "line": {"color": SURFACE[mode], "width": 2}},
             opacity=1 if highlighted else 0.55,
             showlegend=False,
-            hovertemplate=f"<b>{r['name']}</b><br>By mentions: #{int(r['vote_rank'])}"
-            f"<br>By priority: #{int(r['rank'])}<extra></extra>",
+            hovertemplate=f"<b>{r['name']}</b><br>{t('By mentions', lang)}: "
+            f"#{int(r['vote_rank'])}<br>{t('By priority', lang)}: #{int(r['rank'])}"
+            "<extra></extra>",
         )
         weight = "<b>{}</b>" if highlighted else "{}"
         fig.add_annotation(
@@ -156,13 +175,15 @@ def rank_shift_chart(scored: pd.DataFrame, top_n: int = 10, mode: str = "light")
     n = int(max(road["rank"].max(), road["vote_rank"].max()))
     fig.update_xaxes(
         tickvals=[0, 1],
-        ticktext=["Rank by mention count", "Rank by Clamor priority"],
+        ticktext=[t("Rank by mention count", lang), t("Rank by Clamor priority", lang)],
         range=[-0.9, 1.9],
         showgrid=False,
         side="top",
     )
     fig.update_yaxes(autorange="reversed", range=[n + 0.5, 0.5], showgrid=False, visible=False)
-    return _layout(fig, mode, height=80 + 30 * n, margin={"l": 10, "r": 10, "t": 50, "b": 10})
+    return _layout(
+        fig, mode, height=80 + 30 * n, margin={"l": 10, "r": 10, "t": 50, "b": 10}, lang=lang
+    )
 
 
 def timeline_chart(
@@ -172,6 +193,7 @@ def timeline_chart(
     releases: pd.DataFrame | None = None,
     mode: str = "light",
     normalize: bool = True,
+    lang: str = "en",
 ) -> go.Figure:
     """Weekly mentions for up to four themes, with release dates marked."""
     fig = go.Figure()
@@ -187,7 +209,7 @@ def timeline_chart(
             name=_short(theme_names.get(tid, tid), 34),
             line={"color": color, "width": 2, "shape": "spline", "smoothing": 0.4},
             hovertemplate="%{y:.1f}"
-            + ("% of feedback" if normalize else " mentions")
+            + t("% of feedback" if normalize else " mentions", lang)
             + "<extra>%{fullData.name}</extra>",
         )
     if releases is not None and len(releases):
@@ -203,12 +225,14 @@ def timeline_chart(
                 font={"color": MUTED, "size": 11},
             )
     fig.update_yaxes(
-        title="% of all feedback" if normalize else "mentions per week", rangemode="tozero"
+        title=t("% of all feedback" if normalize else "mentions per week", lang),
+        rangemode="tozero",
     )
     fig.update_layout(hovermode="x unified")
     return _layout(
         fig,
         mode,
+        lang=lang,
         height=400,
         margin={"t": 60, "b": 40},
         legend={"orientation": "h", "y": -0.15, "x": 0, "yanchor": "top"},
@@ -216,13 +240,13 @@ def timeline_chart(
 
 
 def release_chart(
-    radar: pd.DataFrame, theme_names: dict[str, str], mode: str = "light"
+    radar: pd.DataFrame, theme_names: dict[str, str], mode: str = "light", lang: str = "en"
 ) -> go.Figure:
     """Rate ratio after vs before each release with a 95% interval (log scale)."""
     data = radar[radar["rate_ratio"].notna()].copy() if "rate_ratio" in radar else radar.iloc[:0]
     fig = go.Figure()
     if data.empty:
-        return _layout(fig, mode, height=200)
+        return _layout(fig, mode, height=200, lang=lang)
     data["label"] = [
         f"{VERDICT_STYLE.get(v, ('neutral', ''))[1]} {ver} · {_short(theme_names.get(t, t), 28)}"
         for v, ver, t in zip(data["verdict"], data["version"], data["theme_id"], strict=True)
@@ -233,7 +257,7 @@ def release_chart(
             x=g["rate_ratio"],
             y=g["label"],
             mode="markers",
-            name=verdict,
+            name=t(verdict, lang),
             marker={"size": 11, "color": color, "line": {"color": SURFACE[mode], "width": 2}},
             error_x={
                 "type": "data",
@@ -246,22 +270,28 @@ def release_chart(
             customdata=np.stack(
                 [g["pre_mentions"], g["post_mentions"], g["ci_low"], g["ci_high"]], axis=1
             ),
-            hovertemplate="<b>%{y}</b><br>Rate after / before: x%{x:.2f}"
-            "<br>95% CI x%{customdata[2]:.2f} - x%{customdata[3]:.2f}"
-            "<br>Mentions before %{customdata[0]}, after %{customdata[1]}"
-            f"<extra>{verdict}</extra>",
+            hovertemplate=f"<b>%{{y}}</b><br>{t('Rate after / before', lang)}: x%{{x:.2f}}"
+            f"<br>{t('95% CI', lang)} x%{{customdata[2]:.2f}} - x%{{customdata[3]:.2f}}<br>"
+            + t(
+                "Mentions before {pre}, after {post}",
+                lang,
+                pre="%{customdata[0]}",
+                post="%{customdata[1]}",
+            )
+            + f"<extra>{t(verdict, lang)}</extra>",
         )
     fig.add_vline(x=1, line={"color": MUTED, "width": 1})
     fig.update_xaxes(
         type="log",
-        title="Mention rate after vs before the release (log scale)",
-        tickvals=[0.1, 0.25, 0.5, 1, 2, 4, 10, 25],
-        ticktext=["0.1x", "0.25x", "0.5x", "1x", "2x", "4x", "10x", "25x"],
+        title=t("Mention rate after vs before the release (log scale)", lang),
+        tickvals=TICKS,
+        ticktext=[f"{number(v, lang, 2).rstrip('0').rstrip('.,')}x" for v in TICKS],
     )
     fig.update_yaxes(autorange="reversed", showgrid=False)
     return _layout(
         fig,
         mode,
+        lang=lang,
         height=130 + 42 * len(data),
         margin={"l": 12 + 7 * max(len(label) for label in data["label"]), "t": 80},
     )

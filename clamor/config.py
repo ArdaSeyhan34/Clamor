@@ -63,6 +63,7 @@ class Config:
     release_match_similarity: float = 0.35
     weights: Weights = field(default_factory=Weights)
     random_state: int = 0
+    report_language: str | None = None  # of reports and briefs; None: same as `language`
 
     @property
     def backend(self) -> str:
@@ -71,6 +72,13 @@ class Config:
         from .lang import get_language
 
         return get_language(self.language).default_embedding
+
+    @property
+    def output_language(self) -> str:
+        from .i18n import OUTPUT_LANGUAGES
+
+        lang = self.report_language or self.language
+        return lang if lang in OUTPUT_LANGUAGES else "en"
 
     def backend_default(self, key: str, backend: str) -> float:
         family = "st" if backend.startswith("st:") else backend
